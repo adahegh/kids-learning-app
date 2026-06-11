@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Learn & Play">
+<title>Learn & Play ✏️</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; }
+#app-header { background: #fff; border-bottom: 1px solid #dde6f0; padding: 8px 14px 0; position: sticky; top: 0; z-index: 60; }
+#app-header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+#app-header h1 { font-size: 18px; font-weight: 700; color: #0a2a4a; }
+#header-badges { display: flex; align-items: center; gap: 7px; }
+#fish-badge { display: flex; align-items: center; gap: 4px; background: #e0f3ff; border-radius: 99px; padding: 4px 11px; font-size: 13px; font-weight: 700; color: #0C447C; }
+#streak-badge { display: flex; align-items: center; gap: 4px; background: #FFF3E0; border-radius: 99px; padding: 4px 11px; font-size: 13px; font-weight: 700; color: #B45309; }
+#xp-bar-wrap { padding: 0 0 7px; }
+#xp-bar-row { display: flex; align-items: center; gap: 8px; }
+#xp-bar-track { flex: 1; height: 6px; background: #e8f0f8; border-radius: 99px; overflow: hidden; }
+#xp-bar-fill { height: 100%; background: linear-gradient(90deg,#378ADD,#1D9E75); border-radius: 99px; transition: width 0.5s ease; width: 0%; }
+#xp-label { font-size: 11px; font-weight: 700; color: #889aaa; white-space: nowrap; }
+#bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1px solid #dde6f0; display: flex; z-index: 60; padding-bottom: env(safe-area-inset-bottom); }
+.nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 4px; border: none; background: none; cursor: pointer; touch-action: manipulation; gap: 2px; }
+.nav-tab-icon { font-size: 22px; line-height: 1; }
+.nav-tab-label { font-size: 11px; font-weight: 600; color: #889aaa; transition: color 0.15s; }
+.nav-tab.active .nav-tab-label { color: #185FA5; }
+.nav-tab-bar { width: 24px; height: 3px; border-radius: 99px; background: transparent; transition: background 0.15s; margin-top: 2px; }
+.nav-tab.active .nav-tab-bar { background: #185FA5; }
+.screen { display: none; padding: 12px 12px 90px; max-width: 520px; margin: 0 auto; }
+.screen.active { display: block; }
+
+/* WRITING */
+#sub-tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; }
+.sub-tab { padding: 7px 16px; border-radius: 99px; border: 1.5px solid #c8d8e8; background: #fff; font-size: 15px; font-weight: 600; color: #667788; cursor: pointer; transition: all 0.15s; touch-action: manipulation; }
+.sub-tab.active { background: #185FA5; border-color: #185FA5; color: #fff; }
+#char-selector { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 0 0 12px; }
+.char-btn { width: 46px; height: 46px; border-radius: 10px; border: 1.5px solid #c8d8e8; background: #fff; font-size: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #1a2a3a; transition: all 0.15s; touch-action: manipulation; }
+.char-btn.active { background: #deeeff; border-color: #378ADD; color: #185FA5; }
+#canvas-wrapper { position: relative; width: 100%; max-width: 460px; margin: 0 auto; background: #fff; border-radius: 16px; border: 1.5px solid #c8d8e8; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+#guide-canvas, #draw-canvas { position: absolute; top: 0; left: 0; }
+#guide-canvas { z-index: 1; } #draw-canvas { z-index: 2; }
+#stroke-indicators { display: flex; gap: 8px; justify-content: center; margin: 10px 0; flex-wrap: wrap; }
+.stroke-dot { width: 32px; height: 32px; border-radius: 50%; border: 2px solid #c8d8e8; background: #f0f4f8; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #667788; transition: all 0.3s; }
+.stroke-dot.done { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+.stroke-dot.active { background: #378ADD; border-color: #378ADD; color: #fff; animation: pulse 1s infinite; }
+#w-instructions { text-align: center; font-size: 15px; color: #556677; margin: 8px 0; min-height: 22px; font-weight: 500; }
+#w-btn-row { display: flex; gap: 10px; justify-content: center; margin: 12px 0; flex-wrap: wrap; }
+.w-btn { padding: 12px 20px; border-radius: 12px; border: 1.5px solid #c8d8e8; background: #fff; font-size: 15px; font-weight: 600; cursor: pointer; color: #1a2a3a; transition: all 0.15s; touch-action: manipulation; }
+.w-btn:active { transform: scale(0.97); }
+.w-btn.primary { background: #185FA5; border-color: #185FA5; color: #fff; }
+
+/* MATH */
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 12px; }
+.stat { background: #fff; border: 1px solid #dde6f0; border-radius: 12px; padding: 10px; text-align: center; }
+.stat-val { font-size: 24px; font-weight: 800; color: #1a2a3a; }
+.stat-lbl { font-size: 11px; color: #778899; margin-top: 2px; font-weight: 600; }
+.level-row { text-align: center; margin-bottom: 8px; }
+.level-badge { display: inline-flex; align-items: center; gap: 6px; background: #deeeff; color: #0C447C; font-size: 13px; font-weight: 600; padding: 4px 14px; border-radius: 99px; }
+.m-progress-bar { height: 7px; background: #dde6f0; border-radius: 99px; overflow: hidden; margin-bottom: 12px; }
+.m-progress-fill { height: 100%; background: #378ADD; border-radius: 99px; transition: width 0.4s ease; }
+.problem-card { background: #fff; border: 1px solid #dde6f0; border-radius: 16px; padding: 1.25rem 1rem 1rem; margin-bottom: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+.locked-label { font-size: 14px; color: #185FA5; font-weight: 600; margin-bottom: 10px; }
+.equation { font-size: 52px; font-weight: 700; color: #1a2a3a; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px; }
+.big-num-box { background: #deeeff; color: #0C447C; border-radius: 12px; padding: 2px 20px; border: 2px solid #85B7EB; }
+.hint-text { font-size: 14px; color: #778899; min-height: 20px; margin-bottom: 10px; font-weight: 500; }
+.frogs-row { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 8px 0; }
+.frog { font-size: 40px; cursor: pointer; transition: transform 0.15s; user-select: none; border-radius: 8px; padding: 4px 6px; border: 2px solid transparent; touch-action: manipulation; line-height: 1; }
+.frog.tapped { background: #EAF3DE; border-color: #97C459; transform: scale(1.1); animation: boing 0.3s ease-out; }
+@keyframes boing { 0%{transform:scale(1)} 50%{transform:scale(1.35)} 100%{transform:scale(1.1)} }
+.count-display { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 8px 0 0; }
+.count-label { font-size: 13px; color: #778899; font-weight: 500; }
+.count-bubble { font-size: 38px; font-weight: 700; min-width: 68px; min-height: 68px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #f0f4f8; border: 1.5px solid #c8d8e8; color: #1a2a3a; transition: all 0.2s; }
+.count-bubble.popped { background: #1D9E75; border-color: #1D9E75; color: #fff; animation: cbpop 0.35s ease-out; }
+@keyframes cbpop { 0%{transform:scale(0.7)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+.m-feedback { text-align: center; font-size: 20px; font-weight: 600; min-height: 30px; color: #1a2a3a; margin: 6px 0; }
+.answer-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 4px 0 10px; }
+.ans-btn { width: 68px; height: 68px; border-radius: 14px; border: 1.5px solid #c8d8e8; background: #fff; font-size: 28px; font-weight: 700; cursor: pointer; color: #1a2a3a; transition: all 0.15s; touch-action: manipulation; }
+.ans-btn:active { transform: scale(0.95); }
+.ans-btn.correct { background: #EAF3DE; border-color: #639922; color: #27500A; animation: cbpop 0.4s; }
+.ans-btn.wrong { background: #FCEBEB; border-color: #E24B4A; color: #791F1F; animation: shake 0.3s; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-7px)} 75%{transform:translateX(7px)} }
+.m-btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.m-btn { padding: 11px 22px; border-radius: 12px; border: 1.5px solid #c8d8e8; background: #fff; font-size: 15px; font-weight: 600; cursor: pointer; color: #1a2a3a; transition: all 0.15s; touch-action: manipulation; }
+
+/* READING */
+.level-pills { display: flex; gap: 8px; justify-content: center; margin-bottom: 14px; flex-wrap: wrap; }
+.level-pill { padding: 6px 16px; border-radius: 99px; border: 1.5px solid #c8dff0; background: #fff; font-size: 13px; font-weight: 600; color: #667788; cursor: pointer; touch-action: manipulation; transition: all 0.15s; }
+.level-pill.active { background: #185FA5; border-color: #185FA5; color: #fff; }
+.r-progress-strip { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.r-progress-bar { flex: 1; height: 8px; background: #d0e8f8; border-radius: 99px; overflow: hidden; }
+.r-progress-fill { height: 100%; background: #378ADD; border-radius: 99px; transition: width 0.5s ease; }
+.r-progress-label { font-size: 13px; color: #778899; font-weight: 600; white-space: nowrap; }
+.flash-card { width: 100%; min-height: 190px; border-radius: 20px; background: #fff; border: 2px solid #c8dff0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 20px; box-shadow: 0 4px 20px rgba(24,95,165,0.10); cursor: pointer; transition: transform 0.12s; touch-action: manipulation; position: relative; margin-bottom: 14px; }
+.flash-card:active { transform: scale(0.97); }
+.flash-word { font-size: 72px; font-weight: 800; color: #0a2a4a; letter-spacing: 2px; text-align: center; line-height: 1.1; }
+.flash-hint { font-size: 14px; color: #99aabb; margin-top: 12px; font-weight: 500; }
+.card-lvl-badge { position: absolute; top: 14px; right: 14px; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; }
+.badge-prek { background: #EAF3DE; color: #27500A; }
+.badge-k { background: #deeeff; color: #0C447C; }
+.know-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+.know-btn { padding: 16px; border-radius: 16px; border: none; font-size: 17px; font-weight: 700; cursor: pointer; touch-action: manipulation; transition: all 0.15s; }
+.know-btn:active { transform: scale(0.96); }
+.btn-know { background: #1D9E75; color: #fff; }
+.btn-still { background: #f0f4f8; color: #445566; border: 1.5px solid #c8d8e8 !important; }
+.r-nav { display: flex; gap: 10px; justify-content: center; }
+.r-nav-btn { padding: 10px 20px; border-radius: 12px; border: 1.5px solid #c8d8e8; background: #fff; font-size: 14px; font-weight: 600; color: #445566; cursor: pointer; touch-action: manipulation; }
+
+/* AQUARIUM */
+.aq-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 14px; }
+.aq-stat { background: #fff; border: 1px solid #c8dff0; border-radius: 14px; padding: 10px; text-align: center; }
+.aq-stat-val { font-size: 24px; font-weight: 800; color: #0a2a4a; }
+.aq-stat-lbl { font-size: 11px; color: #889aaa; margin-top: 2px; font-weight: 600; }
+.tank { background: linear-gradient(180deg, #b8e4f9 0%, #7ec8e3 40%, #4da8cc 100%); border-radius: 20px; border: 3px solid #3a9abf; min-height: 260px; position: relative; overflow: hidden; margin-bottom: 14px; }
+.tank-glass { position: absolute; top: 0; left: 0; right: 0; height: 55%; background: rgba(255,255,255,0.07); border-radius: 17px 17px 0 0; pointer-events: none; }
+#tank-fish-layer { position: absolute; top: 0; left: 0; right: 0; bottom: 40px; }
+.tank-floor { position: absolute; bottom: 0; left: 0; right: 0; height: 40px; background: #c8a96e; border-radius: 0 0 17px 17px; display: flex; align-items: flex-end; padding: 0 10px 4px; gap: 6px; }
+.plant { font-size: 26px; }
+.fish-in-tank { position: absolute; font-size: 26px; animation: swim linear infinite; user-select: none; }
+@keyframes swim { 0%{transform:translateX(0) scaleX(1)} 48%{transform:translateX(var(--dist)) scaleX(1)} 50%{transform:translateX(var(--dist)) scaleX(-1)} 98%{transform:translateX(0) scaleX(-1)} 100%{transform:translateX(0) scaleX(1)} }
+.tank-empty { display: flex; align-items: center; justify-content: center; height: 220px; }
+.tank-empty p { color: #5a9abf; font-size: 15px; font-weight: 600; text-align: center; padding: 20px; }
+.fish-grid-card { background: #fff; border-radius: 16px; border: 1px solid #c8dff0; padding: 14px 16px; margin-bottom: 12px; }
+.fish-grid-title { font-size: 12px; font-weight: 700; color: #889aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.fish-unlock-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+.fish-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.fish-emoji { font-size: 30px; filter: grayscale(1) opacity(0.3); transition: all 0.3s; }
+.fish-emoji.unlocked { filter: none; }
+.fish-name { font-size: 11px; color: #889aaa; font-weight: 600; text-align: center; }
+.fish-name.unlocked { color: #1D9E75; }
+.words-card { background: #fff; border-radius: 16px; border: 1px solid #c8dff0; padding: 14px 16px; }
+.words-title { font-size: 12px; font-weight: 700; color: #889aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+.word-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.word-chip { background: #EAF3DE; color: #27500A; border-radius: 99px; padding: 4px 12px; font-size: 14px; font-weight: 700; }
+.word-chip.k { background: #deeeff; color: #0C447C; }
+
+/* WORD POP */
+#screen-wordpop { padding: 0 0 80px; max-width: 520px; margin: 0 auto; }
+#wp-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 8px; }
+.wp-stat-pill { display: flex; align-items: center; gap: 5px; background: #fff; border: 1px solid #dde6f0; border-radius: 99px; padding: 5px 12px; font-size: 13px; font-weight: 700; color: #1a2a3a; }
+#wp-hearts { font-size: 22px; letter-spacing: 2px; }
+#wp-combo { font-size: 13px; font-weight: 800; color: #E05A00; background: #FFF3E0; border-radius: 99px; padding: 4px 12px; display: none; animation: combopop 0.4s ease-out; }
+@keyframes combopop { 0%{transform:scale(0.5)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
+#wp-arena { position: relative; width: 100%; height: calc(100svh - 220px); min-height: 340px; background: linear-gradient(180deg,#e8f4fd 0%,#cce8fa 100%); overflow: hidden; border-top: 1px solid #c8dff0; border-bottom: 1px solid #c8dff0; touch-action: none; }
+#wp-target-display { position: absolute; top: 0; left: 0; right: 0; text-align: center; padding: 12px 10px 8px; z-index: 10; pointer-events: none; }
+#wp-target-label { font-size: 13px; color: #5577aa; font-weight: 600; }
+#wp-target-word { font-size: 36px; font-weight: 800; color: #0a2a4a; letter-spacing: 1px; line-height: 1.1; }
+.wp-bubble { position: absolute; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; user-select: none; font-weight: 800; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.25); box-shadow: inset -4px -4px 12px rgba(0,0,0,0.12), inset 4px 4px 10px rgba(255,255,255,0.35), 0 4px 16px rgba(0,0,0,0.12); transition: transform 0.1s; animation: floatdown linear forwards; }
+.wp-bubble:active { transform: scale(0.92); }
+@keyframes floatdown { 0%{top:-120px;opacity:0} 8%{opacity:1} 95%{opacity:1} 100%{top:110%;opacity:0} }
+.wp-bubble.pop { animation: bubpop 0.35s ease-out forwards !important; pointer-events: none; }
+@keyframes bubpop { 0%{transform:scale(1);opacity:1} 40%{transform:scale(1.5);opacity:0.8} 100%{transform:scale(2.2);opacity:0} }
+.wp-bubble.miss { animation: bupmiss 0.4s ease-in forwards !important; pointer-events: none; }
+@keyframes bupmiss { 0%{transform:scale(1);opacity:1} 100%{transform:scale(0.4) translateY(40px);opacity:0} }
+.wp-pop-text { position: absolute; font-size: 22px; font-weight: 800; color: #1D9E75; pointer-events: none; animation: poptext 0.9s ease-out forwards; z-index: 20; text-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+@keyframes poptext { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-70px) scale(1.3)} }
+.wp-wrong-text { color: #E24B4A; }
+#wp-footer { padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+#wp-highscore { font-size: 13px; color: #778899; font-weight: 600; }
+.wp-btn { padding: 10px 22px; border-radius: 12px; border: 1.5px solid #c8d8e8; background: #fff; font-size: 14px; font-weight: 700; cursor: pointer; color: #1a2a3a; touch-action: manipulation; }
+.wp-btn.go { background: #185FA5; border-color: #185FA5; color: #fff; font-size: 16px; padding: 12px 32px; }
+#wp-start-screen { position: absolute; inset: 0; background: rgba(230,244,253,0.97); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; z-index: 30; padding: 20px; }
+#wp-start-screen h2 { font-size: 28px; font-weight: 800; color: #0a2a4a; }
+#wp-start-screen p { font-size: 15px; color: #5577aa; font-weight: 500; text-align: center; max-width: 280px; line-height: 1.5; }
+#wp-gameover-screen { position: absolute; inset: 0; background: rgba(230,244,253,0.97); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 12px; z-index: 30; padding: 20px; }
+#wp-gameover-screen h2 { font-size: 26px; font-weight: 800; color: #0a2a4a; }
+.wp-go-stat { text-align: center; }
+.wp-go-stat-val { font-size: 36px; font-weight: 800; color: #185FA5; }
+.wp-go-stat-lbl { font-size: 13px; color: #778899; font-weight: 600; }
+#wp-level-select { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.wp-level-btn { padding: 7px 16px; border-radius: 99px; border: 1.5px solid #c8dff0; background: #fff; font-size: 13px; font-weight: 600; color: #667788; cursor: pointer; touch-action: manipulation; }
+.wp-level-btn.active { background: #185FA5; border-color: #185FA5; color: #fff; }
+
+/* DAILY + STREAK SYSTEM */
+#daily-goals-bar { background: #fff; border-bottom: 1px solid #dde6f0; padding: 8px 14px; display: flex; gap: 8px; align-items: center; overflow-x: auto; scrollbar-width: none; }
+#daily-goals-bar::-webkit-scrollbar { display: none; }
+.daily-goal { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 52px; }
+.dg-icon { font-size: 20px; line-height: 1; position: relative; }
+.dg-check { position: absolute; bottom: -2px; right: -4px; font-size: 12px; display: none; }
+.dg-done .dg-check { display: block; }
+.dg-bar-track { width: 44px; height: 4px; background: #e8f0f8; border-radius: 99px; overflow: hidden; }
+.dg-bar-fill { height: 100%; background: #378ADD; border-radius: 99px; transition: width 0.4s; }
+.dg-done .dg-bar-fill { background: #1D9E75; }
+.dg-label { font-size: 10px; font-weight: 700; color: #889aaa; }
+.dg-done .dg-label { color: #1D9E75; }
+.dg-divider { width: 1px; min-width: 1px; height: 32px; background: #e8f0f8; margin: 0 2px; }
+#daily-bonus-pill { display: none; align-items: center; gap: 5px; background: #FFF3E0; border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 700; color: #B45309; white-space: nowrap; margin-left: 4px; }
+.xp-float { position: fixed; font-size: 15px; font-weight: 800; color: #185FA5; pointer-events: none; z-index: 300; animation: xpfloat 1.1s ease-out forwards; }
+@keyframes xpfloat { 0%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-60px)} }
+#streak-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 250; background: rgba(10,42,74,0.5); padding: 20px; }
+#streak-overlay.show { display: flex; }
+.streak-inner { background: #fff; border-radius: 24px; padding: 32px 28px; text-align: center; max-width: 300px; width: 100%; animation: rpop 0.5s ease-out; }
+.streak-emoji { font-size: 64px; }
+.streak-title { font-size: 22px; font-weight: 800; color: #0a2a4a; margin-top: 8px; }
+.streak-sub { font-size: 15px; color: #556677; margin-top: 6px; }
+.streak-close { margin-top: 16px; padding: 12px 32px; border-radius: 12px; background: #185FA5; color: #fff; border: none; font-size: 16px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
+.streak-badges { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 14px; }
+.streak-badge-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.streak-badge-icon { font-size: 32px; filter: grayscale(1) opacity(0.3); transition: all 0.3s; }
+.streak-badge-icon.earned { filter: none; }
+.streak-badge-lbl { font-size: 11px; font-weight: 600; color: #889aaa; text-align: center; }
+.streak-badge-lbl.earned { color: #B45309; }
+.aq-section-title { font-size: 12px; font-weight: 700; color: #889aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+
+/* REWARD OVERLAY */
+#reward-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 150; pointer-events: none; padding: 20px; }
+#reward-overlay.show { display: flex; }
+.reward-inner { background: #fff; border-radius: 24px; padding: 28px 32px; text-align: center; border: 3px solid #1D9E75; animation: rpop 0.5s ease-out; max-width: 280px; width: 100%; }
+.reward-fish { font-size: 56px; }
+.reward-msg { font-size: 18px; font-weight: 700; color: #0F6E56; margin-top: 8px; }
+.reward-sub { font-size: 14px; color: #667788; margin-top: 4px; }
+@keyframes rpop { 0%{transform:scale(0.5);opacity:0} 70%{transform:scale(1.06)} 100%{transform:scale(1);opacity:1} }
+
+/* SHARED */
+#celebration { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; z-index: 200; pointer-events: none; }
+#celebration.show { display: flex; }
+#cel-inner { font-size: 96px; animation: celpop 0.55s ease-out; }
+@keyframes celpop { 0%{transform:scale(0) rotate(-15deg);opacity:0} 65%{transform:scale(1.2) rotate(5deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+#stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 199; }
+.star { position: absolute; font-size: 26px; animation: flystar 1.3s ease-out forwards; }
+@keyframes flystar { 0%{opacity:1;transform:translateY(0) scale(1)} 100%{opacity:0;transform:translateY(-130px) scale(0.3)} }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+
+/* PRACTICE CALENDAR */
+#cal-summary { display: flex; gap: 6px; margin-bottom: 12px; }
+.cal-stat { flex: 1; background: #f0f4f8; border: 1px solid #dde6f0; border-radius: 10px; padding: 7px 4px; text-align: center; display: flex; flex-direction: column; gap: 2px; }
+.cal-stat-val { font-size: 15px; font-weight: 800; color: #0a2a4a; }
+.cal-stat-lbl { font-size: 10px; font-weight: 600; color: #889aaa; }
+#cal-nav { display: flex; align-items: center; justify-content: center; gap: 14px; margin-bottom: 8px; }
+#cal-title { font-size: 14px; font-weight: 700; color: #0a2a4a; min-width: 130px; text-align: center; }
+.cal-arrow { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid #c8d8e8; background: #fff; font-size: 18px; font-weight: 700; color: #185FA5; cursor: pointer; line-height: 1; touch-action: manipulation; }
+.cal-arrow:active { transform: scale(0.94); }
+#cal-weekdays { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 4px; }
+#cal-weekdays span { text-align: center; font-size: 11px; font-weight: 700; color: #889aaa; }
+#cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+.cal-cell { position: relative; aspect-ratio: 1; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #667788; background: #f5f8fb; }
+.cal-blank { background: transparent; }
+.cal-none { background: #f5f8fb; color: #b8c4d0; }
+.cal-future { background: #fafcfe; color: #cdd8e2; }
+.cal-done { background: #1D9E75; color: #fff; }
+.cal-goal { background: #FEF3C7; color: #92660A; border: 1.5px solid #F59E0B; }
+.cal-missed { background: #FCEBEB; color: #C56B6B; }
+.cal-today { outline: 2.5px solid #185FA5; outline-offset: 1px; }
+.cal-mark { position: absolute; top: -5px; right: -3px; font-size: 12px; }
+#cal-legend { margin-top: 10px; font-size: 10.5px; color: #889aaa; font-weight: 600; display: flex; align-items: center; flex-wrap: wrap; gap: 4px; justify-content: center; }
+#cal-legend .lg { display: inline-block; width: 13px; height: 13px; border-radius: 4px; vertical-align: middle; }
+#cal-legend .lg-done { background: #1D9E75; }
+#cal-legend .lg-missed { background: #FCEBEB; border: 1px solid #E2A0A0; }
+#cal-legend .lg-today { background: #fff; outline: 2px solid #185FA5; outline-offset: -1px; }
+#cal-legend .lg-goal { width: auto; height: auto; }
+</style>
+</head>
+<body>
+
+<div id="app-header">
+  <div id="app-header-top">
+    <h1>✏️ Learn &amp; Play</h1>
+    <div id="header-badges">
+      <div id="streak-badge" onclick="switchMain('aquarium')" style="cursor:pointer">🔥 <span id="streak-count">0</span></div>
+      <div id="fish-badge">🐠 <span id="fish-total">0</span></div>
+    </div>
+  </div>
+  <div id="xp-bar-wrap">
+    <div id="xp-bar-row">
+      <div id="xp-bar-track"><div id="xp-bar-fill"></div></div>
+      <div id="xp-label">0 / 25 XP</div>
+    </div>
+  </div>
+</div>
+<div id="daily-goals-bar">
+  <div class="daily-goal" id="dg-writing">
+    <div class="dg-icon">✏️<span class="dg-check">✅</span></div>
+    <div class="dg-bar-track"><div class="dg-bar-fill" id="dg-writing-fill" style="width:0%"></div></div>
+    <div class="dg-label" id="dg-writing-lbl">0/3</div>
+  </div>
+  <div class="dg-divider"></div>
+  <div class="daily-goal" id="dg-math">
+    <div class="dg-icon">🔢<span class="dg-check">✅</span></div>
+    <div class="dg-bar-track"><div class="dg-bar-fill" id="dg-math-fill" style="width:0%"></div></div>
+    <div class="dg-label" id="dg-math-lbl">0/5</div>
+  </div>
+  <div class="dg-divider"></div>
+  <div class="daily-goal" id="dg-reading">
+    <div class="dg-icon">📖<span class="dg-check">✅</span></div>
+    <div class="dg-bar-track"><div class="dg-bar-fill" id="dg-reading-fill" style="width:0%"></div></div>
+    <div class="dg-label" id="dg-reading-lbl">0/5</div>
+  </div>
+  <div class="dg-divider"></div>
+  <div class="daily-goal" id="dg-wordpop">
+    <div class="dg-icon">🫧<span class="dg-check">✅</span></div>
+    <div class="dg-bar-track"><div class="dg-bar-fill" id="dg-wordpop-fill" style="width:0%"></div></div>
+    <div class="dg-label" id="dg-wordpop-lbl">0/10</div>
+  </div>
+  <div id="daily-bonus-pill">🎁 Bonus fish!</div>
+</div>
+
+<!-- WRITING -->
+<div id="screen-writing" class="screen active">
+  <div id="sub-tabs">
+    <button class="sub-tab active" onclick="switchSub('upper')">A B C</button>
+    <button class="sub-tab" onclick="switchSub('lower')">a b c</button>
+    <button class="sub-tab" onclick="switchSub('numbers')">1 2 3</button>
+  </div>
+  <div id="char-selector"></div>
+  <div id="canvas-wrapper">
+    <canvas id="guide-canvas"></canvas>
+    <canvas id="draw-canvas"></canvas>
+  </div>
+  <div id="stroke-indicators"></div>
+  <div id="w-instructions">Trace stroke 1 – follow the blue dots!</div>
+  <div id="w-btn-row">
+    <button class="w-btn" onclick="showGuide()">👀 Show me</button>
+    <button class="w-btn" onclick="clearDrawing()">🔄 Try again</button>
+    <button class="w-btn primary" onclick="nextChar()">Next ➡</button>
+  </div>
+</div>
+
+<!-- MATH -->
+<div id="screen-math" class="screen">
+  <div class="stats-row">
+    <div class="stat"><div class="stat-val" id="m-score">0</div><div class="stat-lbl">stars ⭐</div></div>
+    <div class="stat"><div class="stat-val" id="m-streak">0</div><div class="stat-lbl">streak 🔥</div></div>
+    <div class="stat"><div class="stat-val" id="m-qnum">1</div><div class="stat-lbl">question</div></div>
+  </div>
+  <div class="level-row"><span class="level-badge">🌟 <span id="m-level-name">starter</span></span></div>
+  <div class="m-progress-bar"><div class="m-progress-fill" id="m-prog-fill" style="width:0%"></div></div>
+  <div class="problem-card">
+    <div class="locked-label">🔒 Start at <strong id="m-big-label">5</strong> — already counted!</div>
+    <div class="equation">
+      <span class="big-num-box" id="m-eq-big">5</span>
+      <span>+</span><span id="m-eq-add">4</span>
+      <span>=</span><span id="m-eq-ans" style="color:#b0c4d8">?</span>
+    </div>
+    <div class="hint-text" id="m-hint">Tap each animal to count on!</div>
+    <div class="frogs-row" id="m-frogs"></div>
+    <div class="count-display">
+      <div class="count-label">counting:</div>
+      <div class="count-bubble" id="m-bubble">5</div>
+    </div>
+  </div>
+  <div class="m-feedback" id="m-feedback"></div>
+  <div class="answer-row" id="m-answer-row"></div>
+  <div class="m-btn-row">
+    <button class="m-btn" onclick="newQuestion()">🔄 New question</button>
+    <button class="m-btn" id="m-mode-btn" onclick="toggleMode()">🐸 Frog mode</button>
+  </div>
+</div>
+
+<!-- READING -->
+<div id="screen-reading" class="screen">
+  <div class="level-pills">
+    <button class="level-pill active" onclick="setRLevel('all')">All words</button>
+    <button class="level-pill" onclick="setRLevel('prek')">Pre-K</button>
+    <button class="level-pill" onclick="setRLevel('k')">Kindergarten</button>
+    <button class="level-pill" onclick="setRLevel('review')">⭐ Review</button>
+  </div>
+  <div class="r-progress-strip">
+    <div class="r-progress-bar"><div class="r-progress-fill" id="r-prog-fill" style="width:0%"></div></div>
+    <div class="r-progress-label" id="r-prog-label">0 / 0 known</div>
+  </div>
+  <div class="flash-card" id="flash-card" onclick="flipCard()">
+    <span class="card-lvl-badge" id="card-badge"></span>
+    <div class="flash-word" id="card-word">the</div>
+    <div class="flash-hint" id="card-hint">tap to hear the word</div>
+  </div>
+  <div class="know-btns">
+    <button class="know-btn btn-still" onclick="markWord(false)">😅 Still learning</button>
+    <button class="know-btn btn-know" onclick="markWord(true)">⭐ I know it!</button>
+  </div>
+  <div class="r-nav">
+    <button class="r-nav-btn" onclick="prevCard()">← Back</button>
+    <button class="r-nav-btn" onclick="shuffleRDeck()">🔀 Shuffle</button>
+    <button class="r-nav-btn" onclick="nextCard()">Next →</button>
+  </div>
+</div>
+
+<!-- AQUARIUM -->
+<div id="screen-aquarium" class="screen">
+  <div class="aq-stats">
+    <div class="aq-stat"><div class="aq-stat-val" id="aq-mastered">0</div><div class="aq-stat-lbl">words learned</div></div>
+    <div class="aq-stat"><div class="aq-stat-val" id="aq-fish">0</div><div class="aq-stat-lbl">fish earned</div></div>
+    <div class="aq-stat"><div class="aq-stat-val" id="aq-xp-total">0</div><div class="aq-stat-lbl">total XP ⭐</div></div>
+  </div>
+  <!-- Streak badges -->
+  <div class="fish-grid-card">
+    <div class="fish-grid-title aq-section-title">🔥 Streak badges</div>
+    <div class="streak-badges" id="streak-badges"></div>
+  </div>
+  <!-- Practice calendar -->
+  <div class="fish-grid-card" id="calendar-card">
+    <div class="fish-grid-title aq-section-title">📅 Practice calendar</div>
+    <div id="cal-summary"></div>
+    <div id="cal-nav">
+      <button class="cal-arrow" onclick="calShift(-1)">‹</button>
+      <span id="cal-title"></span>
+      <button class="cal-arrow" onclick="calShift(1)">›</button>
+    </div>
+    <div id="cal-weekdays"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+    <div id="cal-grid"></div>
+    <div id="cal-legend"><span class="lg lg-goal">🌟</span> goal done <span class="lg lg-done"></span> practiced <span class="lg lg-missed"></span> missed <span class="lg lg-today"></span> today</div>
+  </div>
+  <div class="tank" id="tank">
+    <div class="tank-glass"></div>
+    <div id="tank-fish-layer"></div>
+    <div class="tank-floor">
+      <span class="plant">🌿</span><span class="plant">🪸</span><span class="plant">🌿</span>
+      <span class="plant">🪨</span><span class="plant">🌿</span><span class="plant">🪸</span>
+    </div>
+  </div>
+  <div class="fish-grid-card">
+    <div class="fish-grid-title aq-section-title">Fish collection 🐠</div>
+    <div class="fish-unlock-grid" id="fish-unlock-grid"></div>
+  </div>
+  <div class="words-card" id="words-card" style="display:none">
+    <div class="words-title aq-section-title">Words I know ⭐</div>
+    <div class="word-chips" id="word-chips"></div>
+  </div>
+</div>
+
+<!-- WORD POP -->
+<div id="screen-wordpop" class="screen">
+  <div id="wp-header">
+    <div id="wp-hearts">❤️❤️❤️</div>
+    <div id="wp-combo">🔥 COMBO x<span id="wp-combo-num">2</span></div>
+    <div class="wp-stat-pill">⭐ <span id="wp-score">0</span></div>
+  </div>
+  <div id="wp-arena">
+    <div id="wp-target-display">
+      <div id="wp-target-label">tap the bubble that says…</div>
+      <div id="wp-target-word">the</div>
+    </div>
+    <!-- bubbles injected here -->
+    <div id="wp-start-screen">
+      <h2>🫧 Word Pop!</h2>
+      <p>Listen for a word, then tap the right bubble before it floats away!</p>
+      <div id="wp-level-select">
+        <button class="wp-level-btn active" onclick="wpSetLevel('prek')">Pre-K</button>
+        <button class="wp-level-btn" onclick="wpSetLevel('k')">Kindergarten</button>
+        <button class="wp-level-btn" onclick="wpSetLevel('all')">All words</button>
+      </div>
+      <button class="wp-btn go" onclick="wpStart()">Let's Pop! 🫧</button>
+    </div>
+    <div id="wp-gameover-screen">
+      <div style="font-size:56px">🫧</div>
+      <h2>Game Over!</h2>
+      <div style="display:flex;gap:24px">
+        <div class="wp-go-stat"><div class="wp-go-stat-val" id="wp-final-score">0</div><div class="wp-go-stat-lbl">score</div></div>
+        <div class="wp-go-stat"><div class="wp-go-stat-val" id="wp-final-best">0</div><div class="wp-go-stat-lbl">best</div></div>
+        <div class="wp-go-stat"><div class="wp-go-stat-val" id="wp-final-popped">0</div><div class="wp-go-stat-lbl">popped</div></div>
+      </div>
+      <button class="wp-btn go" onclick="wpStart()" style="margin-top:6px">Play Again! 🫧</button>
+      <button class="wp-btn" onclick="wpShowStart()">Change level</button>
+    </div>
+  </div>
+  <div id="wp-footer">
+    <div id="wp-highscore">Best: <span id="wp-best">0</span></div>
+    <button class="wp-btn" onclick="wpStop()">⏹ Stop</button>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bottom-nav">
+  <button class="nav-tab active" onclick="switchMain('writing')">
+    <div class="nav-tab-icon">✏️</div>
+    <div class="nav-tab-label">Writing</div>
+    <div class="nav-tab-bar"></div>
+  </button>
+  <button class="nav-tab" onclick="switchMain('math')">
+    <div class="nav-tab-icon">🔢</div>
+    <div class="nav-tab-label">Math</div>
+    <div class="nav-tab-bar"></div>
+  </button>
+  <button class="nav-tab" onclick="switchMain('reading')">
+    <div class="nav-tab-icon">📖</div>
+    <div class="nav-tab-label">Reading</div>
+    <div class="nav-tab-bar"></div>
+  </button>
+  <button class="nav-tab" onclick="switchMain('aquarium')">
+    <div class="nav-tab-icon">🌊</div>
+    <div class="nav-tab-label">Aquarium</div>
+    <div class="nav-tab-bar"></div>
+  </button>
+  <button class="nav-tab" onclick="switchMain('wordpop')">
+    <div class="nav-tab-icon">🫧</div>
+    <div class="nav-tab-label">Word Pop</div>
+    <div class="nav-tab-bar"></div>
+  </button>
+</div>
+
+<div id="streak-overlay">
+  <div class="streak-inner">
+    <div class="streak-emoji" id="streak-overlay-emoji">🔥</div>
+    <div class="streak-title" id="streak-overlay-title">3 Day Streak!</div>
+    <div class="streak-sub" id="streak-overlay-sub">You earned a bonus fish!</div>
+    <button class="streak-close" onclick="document.getElementById('streak-overlay').classList.remove('show')">Awesome! 🎉</button>
+  </div>
+</div>
+
+<div id="reward-overlay">
+  <div class="reward-inner">
+    <div class="reward-fish" id="reward-fish">🐠</div>
+    <div class="reward-msg" id="reward-msg">You earned a fish!</div>
+    <div class="reward-sub" id="reward-sub"></div>
+  </div>
+</div>
+<div id="celebration"><div id="cel-inner">🌟</div></div>
+<div id="stars-container"></div>
+
+<script>
+/* NAV */
+function switchMain(tab){
+  document.querySelectorAll('.nav-tab').forEach((b,i)=>b.classList.toggle('active',['writing','math','reading','aquarium','wordpop'][i]===tab));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+tab).classList.add('active');
+  if(tab==='writing'){setCanvasSize();drawGuideBackground();}
+  if(tab==='aquarium'){renderAquarium();updateWordChips();}
+  if(tab!=='wordpop')wpStop();
+}
+
+/* WRITING DATA */
+const W_CHARS={upper:['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],lower:['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'],numbers:['1','2','3','4','5','6','7','8','9','0']};
+const STROKES={'A':[[[50,10],[20,90]],[[50,10],[80,90]],[[30,60],[70,60]]],'B':[[[20,10],[20,90]],[[20,10],[60,10],[72,20],[72,44],[60,50],[20,50],[65,50],[75,62],[75,80],[65,90],[20,90]]],'C':[[[75,25],[60,12],[40,10],[25,20],[15,40],[15,60],[25,78],[40,88],[60,88],[75,75]]],'D':[[[20,10],[20,90]],[[20,10],[55,10],[76,25],[80,50],[76,75],[55,90],[20,90]]],'E':[[[20,10],[20,90]],[[20,10],[75,10]],[[20,50],[65,50]],[[20,90],[75,90]]],'F':[[[20,10],[20,90]],[[20,10],[75,10]],[[20,50],[65,50]]],'G':[[[75,25],[60,12],[40,10],[25,20],[15,40],[15,60],[25,78],[40,88],[60,88],[75,78],[75,55]],[[75,55],[50,55]]],'H':[[[20,10],[20,90]],[[80,10],[80,90]],[[20,50],[80,50]]],'I':[[[35,10],[65,10]],[[50,10],[50,90]],[[35,90],[65,90]]],'J':[[[55,10],[55,75],[45,87],[30,85],[20,75]]],'K':[[[20,10],[20,90]],[[75,10],[20,50]],[[20,50],[75,90]]],'L':[[[20,10],[20,90]],[[20,90],[75,90]]],'M':[[[15,10],[15,90]],[[15,10],[50,55]],[[50,55],[85,10]],[[85,10],[85,90]]],'N':[[[20,10],[20,90]],[[20,10],[80,90]],[[80,90],[80,10]]],'O':[[[50,10],[70,15],[85,30],[85,70],[70,85],[50,90],[30,85],[15,70],[15,30],[30,15],[50,10]]],'P':[[[20,10],[20,90]],[[20,10],[60,10],[75,20],[75,44],[60,55],[20,55]]],'Q':[[[50,10],[70,15],[85,30],[85,70],[70,85],[50,90],[30,85],[15,70],[15,30],[30,15],[50,10]],[[60,72],[80,90]]],'R':[[[20,10],[20,90]],[[20,10],[60,10],[75,20],[75,44],[60,55],[20,55]],[[40,55],[80,90]]],'S':[[[75,20],[60,10],[40,10],[25,20],[25,45],[50,50],[75,55],[75,80],[60,90],[40,90],[25,80]]],'T':[[[15,10],[85,10]],[[50,10],[50,90]]],'U':[[[20,10],[20,70],[30,85],[50,90],[70,85],[80,70],[80,10]]],'V':[[[15,10],[50,90],[85,10]]],'W':[[[10,10],[25,90],[50,50],[75,90],[90,10]]],'X':[[[20,10],[80,90]],[[80,10],[20,90]]],'Y':[[[20,10],[50,50]],[[80,10],[50,50]],[[50,50],[50,90]]],'Z':[[[20,10],[80,10]],[[80,10],[20,90]],[[20,90],[80,90]]],'a':[[[68,35],[55,25],[38,25],[25,38],[22,55],[25,70],[38,80],[55,80],[68,70],[68,85]],[[68,35],[68,85]]],'b':[[[22,10],[22,85]],[[22,45],[35,35],[50,32],[63,38],[72,52],[72,65],[63,78],[50,82],[35,80],[22,70]]],'c':[[[70,38],[58,27],[42,25],[28,33],[20,48],[20,62],[28,75],[42,82],[58,80],[70,72]]],'d':[[[78,45],[65,35],[50,32],[37,38],[28,52],[28,65],[37,78],[50,82],[65,80],[78,70]],[[78,10],[78,85]]],'e':[[[22,52],[78,52],[78,42],[65,30],[48,27],[32,35],[22,50],[22,65],[32,78],[48,83],[65,80],[78,72]]],'f':[[[70,18],[58,10],[45,14],[40,28],[40,85]],[[28,45],[60,45]]],'g':[[[68,35],[55,25],[38,25],[25,38],[22,55],[25,70],[38,80],[55,80],[68,70],[68,35]],[[68,35],[68,90],[58,98],[40,96],[28,88]]],'h':[[[22,10],[22,85]],[[22,48],[35,35],[50,32],[63,38],[68,52],[68,85]]],'i':[[[50,27],[50,85]],[[50,15],[50,18]]],'j':[[[55,27],[55,88],[45,98],[30,95],[22,85]],[[55,15],[55,18]]],'k':[[[22,10],[22,85]],[[65,32],[22,58]],[[38,48],[68,85]]],'l':[[[50,10],[50,85]]],'m':[[[20,35],[20,85]],[[20,40],[30,28],[44,26],[54,34],[56,48],[56,85]],[[56,48],[66,28],[78,26],[88,34],[90,48],[90,85]]],'n':[[[22,35],[22,85]],[[22,48],[35,35],[50,32],[63,38],[68,52],[68,85]]],'o':[[[50,27],[65,32],[75,45],[75,62],[65,75],[50,80],[35,75],[25,62],[25,45],[35,32],[50,27]]],'p':[[[22,35],[22,98]],[[22,45],[35,35],[50,32],[63,38],[72,52],[72,65],[63,78],[50,82],[35,80],[22,70]]],'q':[[[78,45],[65,35],[50,32],[37,38],[28,52],[28,65],[37,78],[50,82],[65,80],[78,70]],[[78,35],[78,98]]],'r':[[[25,35],[25,85]],[[25,48],[35,36],[48,32],[60,34],[68,42]]],'s':[[[68,38],[55,28],[40,28],[28,38],[28,55],[50,58],[68,65],[68,78],[55,85],[38,85],[25,75]]],'t':[[[50,12],[50,85]],[[28,42],[72,42]]],'u':[[[22,32],[22,68],[32,80],[50,83],[65,78],[72,65],[72,32]],[[72,32],[72,85]]],'v':[[[20,32],[50,85],[80,32]]],'w':[[[15,32],[28,85],[50,58],[72,85],[85,32]]],'x':[[[22,32],[78,85]],[[78,32],[22,85]]],'y':[[[20,32],[50,65]],[[80,32],[50,65],[38,82],[25,88]]],'z':[[[22,32],[78,32]],[[78,32],[22,85]],[[22,85],[78,85]]],'1':[[[50,10],[50,90]]],'2':[[[25,30],[30,18],[45,10],[60,12],[72,25],[72,40],[30,75],[25,88],[75,88]]],'3':[[[25,15],[55,12],[72,22],[72,42],[55,52],[72,62],[72,78],[55,90],[25,88]]],'4':[[[65,10],[20,65],[80,65]],[[65,10],[65,90]]],'5':[[[25,12],[20,48],[35,40],[55,40],[72,52],[72,72],[55,88],[30,88],[18,78]],[[25,12],[72,12]]],'6':[[[70,18],[55,10],[35,15],[20,35],[18,60],[22,78],[38,90],[58,90],[72,78],[72,60],[58,48],[38,48],[22,60]]],'7':[[[20,12],[80,12],[40,90]]],'8':[[[50,10],[70,20],[70,42],[50,52],[30,62],[30,82],[50,90],[70,82],[70,62],[50,52],[30,42],[30,20],[50,10]]],'9':[[[78,40],[72,22],[55,10],[38,12],[22,28],[22,48],[38,60],[58,60],[75,48],[75,28],[55,10]],[[75,48],[55,88]]],'0':[[[50,10],[70,15],[83,30],[83,70],[70,85],[50,90],[30,85],[17,70],[17,30],[30,15],[50,10]]]};
+
+/* WRITING STATE */
+let wTab='upper',wChar='A',wStroke=0,wDrawing=false,wPath=[],wDone=[],wGuideAnim=null,wShowGuide=false;
+const gCv=document.getElementById('guide-canvas'),dCv=document.getElementById('draw-canvas'),gCx=gCv.getContext('2d'),dCx=dCv.getContext('2d');
+function setCanvasSize(){const w=Math.min(460,window.innerWidth-24);gCv.width=dCv.width=w;gCv.height=dCv.height=w;gCv.style.width=dCv.style.width=w+'px';gCv.style.height=dCv.style.height=w+'px';document.getElementById('canvas-wrapper').style.height=w+'px';}
+function sc(pts){const s=gCv.width/100;return pts.map(([x,y])=>[x*s,y*s]);}
+function drawGuideBackground(){
+  const w=gCv.width;gCx.clearRect(0,0,w,w);
+  gCx.save();gCx.strokeStyle='rgba(100,160,220,0.13)';gCx.lineWidth=1;[30,50,70,85].forEach(p=>{const y=p*w/100;gCx.beginPath();gCx.moveTo(0,y);gCx.lineTo(w,y);gCx.stroke();});gCx.restore();
+  gCx.save();gCx.font=`bold ${w*0.72}px -apple-system,sans-serif`;gCx.fillStyle='rgba(140,170,210,0.08)';gCx.textAlign='center';gCx.textBaseline='middle';gCx.fillText(wChar,w/2,w/2);gCx.restore();
+  const ss=STROKES[wChar]||[];
+  wDone.forEach(i=>{const p=sc(ss[i]);wLine(gCx,p,'#1D9E75',7,1);wArrow(gCx,p,'#1D9E75');});
+  ss.forEach((s,i)=>{if(i!==wStroke&&!wDone.includes(i))wLine(gCx,sc(s),'rgba(150,150,150,0.28)',5,1);});
+  if(wStroke<ss.length){const p=sc(ss[wStroke]);wLine(gCx,p,'#378ADD',7,0.5,[12,8]);gCx.beginPath();gCx.arc(p[0][0],p[0][1],14,0,Math.PI*2);gCx.fillStyle='#185FA5';gCx.fill();gCx.fillStyle='#fff';gCx.font='bold 14px -apple-system,sans-serif';gCx.textAlign='center';gCx.textBaseline='middle';gCx.fillText(wStroke+1,p[0][0],p[0][1]);}
+}
+function wLine(ctx,pts,c,w,a,d=[]){ctx.save();ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);if(pts.length<3){for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);}else{for(let i=1;i<pts.length-1;i++){const mx=(pts[i][0]+pts[i+1][0])/2,my=(pts[i][1]+pts[i+1][1])/2;ctx.quadraticCurveTo(pts[i][0],pts[i][1],mx,my);}ctx.lineTo(pts[pts.length-1][0],pts[pts.length-1][1]);}ctx.strokeStyle=c;ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';ctx.globalAlpha=a;if(d.length)ctx.setLineDash(d);ctx.stroke();ctx.restore();}
+function wArrow(ctx,pts,c){if(pts.length<2)return;const l=pts[pts.length-1],p=pts[pts.length-2],a=Math.atan2(l[1]-p[1],l[0]-p[0]);ctx.save();ctx.translate(l[0],l[1]);ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(-16,-8);ctx.lineTo(-16,8);ctx.closePath();ctx.fillStyle=c;ctx.fill();ctx.restore();}
+function showGuide(){if(wGuideAnim)clearInterval(wGuideAnim);wShowGuide=true;let idx=0;const ss=STROKES[wChar]||[];setWInstr('Watch carefully! 👀');function next(){if(idx>=ss.length){wShowGuide=false;setWInstr('Now you try! Draw stroke '+(wStroke+1));drawGuideBackground();return;}const pts=sc(ss[idx]);let prog=0;wGuideAnim=setInterval(()=>{drawGuideBackground();const end=Math.floor(prog*(pts.length-1));const part=pts.slice(0,end+2);if(part.length>1){wLine(gCx,part,'#F59E0B',11,1);const l=part[part.length-1];gCx.beginPath();gCx.arc(l[0],l[1],11,0,Math.PI*2);gCx.fillStyle='#F59E0B';gCx.fill();}prog+=0.04;if(prog>=1){clearInterval(wGuideAnim);idx++;setTimeout(next,380);}},40);}next();}
+function wGetPos(e){const r=dCv.getBoundingClientRect();const sx=dCv.width/r.width,sy=dCv.height/r.height;if(e.touches)return[(e.touches[0].clientX-r.left)*sx,(e.touches[0].clientY-r.top)*sy];return[(e.clientX-r.left)*sx,(e.clientY-r.top)*sy];}
+dCv.addEventListener('mousedown',e=>{const s=STROKES[wChar]||[];if(!wShowGuide&&wStroke<s.length){wDrawing=true;wPath=[wGetPos(e)];}});
+dCv.addEventListener('touchstart',e=>{e.preventDefault();const s=STROKES[wChar]||[];if(!wShowGuide&&wStroke<s.length){wDrawing=true;wPath=[wGetPos(e)];}},{passive:false});
+dCv.addEventListener('mousemove',e=>{if(!wDrawing)return;wPath.push(wGetPos(e));renderWUser();});
+dCv.addEventListener('touchmove',e=>{e.preventDefault();if(!wDrawing)return;wPath.push(wGetPos(e));renderWUser();},{passive:false});
+dCv.addEventListener('mouseup',()=>{if(wDrawing){wDrawing=false;if(wPath.length>3)checkWStroke();}});
+dCv.addEventListener('touchend',e=>{e.preventDefault();if(wDrawing){wDrawing=false;if(wPath.length>3)checkWStroke();}},{passive:false});
+function renderWUser(){dCx.clearRect(0,0,dCv.width,dCv.height);dCx.beginPath();dCx.moveTo(wPath[0][0],wPath[0][1]);for(let i=1;i<wPath.length;i++)dCx.lineTo(wPath[i][0],wPath[i][1]);dCx.strokeStyle='#E24B4A';dCx.lineWidth=9;dCx.lineCap='round';dCx.lineJoin='round';dCx.stroke();}
+function checkWStroke(){const ss=STROKES[wChar]||[];if(wStroke>=ss.length)return;const score=wScore(wPath,sc(ss[wStroke]));dCx.clearRect(0,0,dCv.width,dCv.height);if(score>0.35){wDone.push(wStroke);wStroke++;buildStrokeDots();drawGuideBackground();if(wStroke>=ss.length){setTimeout(celebrate,200);earnXP(5);tickDaily('writing',1);}else setWInstr('Great! Now draw stroke '+(wStroke+1)+' 🎉');}else{setWInstr('Almost! Follow the blue dashes 💪');setTimeout(drawGuideBackground,100);}}
+function wScore(drawn,target){if(drawn.length<2||target.length<2)return 0;const tS=target[0],tE=target[target.length-1],dS=drawn[0],dE=drawn[drawn.length-1];let ad=Math.abs(Math.atan2(tE[1]-tS[1],tE[0]-tS[0])-Math.atan2(dE[1]-dS[1],dE[0]-dS[0]));if(ad>Math.PI)ad=2*Math.PI-ad;const cs=gCv.width;const prox=1-Math.min(1,(Math.hypot(dS[0]-tS[0],dS[1]-tS[1])+Math.hypot(dE[0]-tE[0],dE[1]-tE[1]))/(cs*1.5));const tL=pLen(target),dL=pLen(drawn);return(1-ad/Math.PI)*0.5+prox*0.35+(Math.min(tL,dL)/Math.max(tL,dL))*0.15;}
+function pLen(pts){let l=0;for(let i=1;i<pts.length;i++)l+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);return l;}
+function buildStrokeDots(){const ss=STROKES[wChar]||[];const c=document.getElementById('stroke-indicators');c.innerHTML='';ss.forEach((s,i)=>{const d=document.createElement('div');d.className='stroke-dot'+(wDone.includes(i)?' done':(i===wStroke?' active':''));d.textContent=i+1;c.appendChild(d);});}
+function buildCharSelector(){const chars=W_CHARS[wTab],sel=document.getElementById('char-selector');sel.innerHTML='';chars.forEach(c=>{const b=document.createElement('button');b.className='char-btn'+(c===wChar?' active':'');b.textContent=c;b.onclick=()=>selectChar(c);sel.appendChild(b);});}
+function selectChar(c){wChar=c;wStroke=0;wDone=[];wPath=[];wShowGuide=false;if(wGuideAnim)clearInterval(wGuideAnim);dCx.clearRect(0,0,dCv.width,dCv.height);buildCharSelector();drawGuideBackground();buildStrokeDots();setWInstr('Trace stroke 1 – follow the blue dots!');}
+function clearDrawing(){wStroke=0;wDone=[];wPath=[];dCx.clearRect(0,0,dCv.width,dCv.height);drawGuideBackground();buildStrokeDots();setWInstr('Try again! Trace stroke 1 💪');}
+function nextChar(){const ch=W_CHARS[wTab];selectChar(ch[(ch.indexOf(wChar)+1)%ch.length]);}
+function setWInstr(m){document.getElementById('w-instructions').textContent=m;}
+function switchSub(tab){wTab=tab;document.querySelectorAll('.sub-tab').forEach((b,i)=>b.classList.toggle('active',['upper','lower','numbers'][i]===tab));selectChar(W_CHARS[tab][0]);}
+
+/* MATH STATE */
+const M_LEVELS=[{name:'starter',bigMin:2,bigMax:5,addMin:1,addMax:3},{name:'getting it',bigMin:3,bigMax:7,addMin:1,addMax:4},{name:'counting pro',bigMin:4,bigMax:9,addMin:2,addMax:5},{name:'superstar',bigMin:5,bigMax:12,addMin:2,addMax:6}];
+const ANIMALS=['🐸','🦋','🐝','🐢','🐠','🐧','🦊','🐨'];
+const CHEERS=['⭐ Amazing!','🎉 You got it!','🌟 Superstar!','🏆 Perfect!','✨ Brilliant!','🎊 Wow!'];
+let mScore=0,mStreak=0,mQnum=0,mLvl=0,mBig=5,mAdd=4,mAns=9,mTapped=0,mAnswered=false,mFrogMode=true;
+function mRand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function newQuestion(){const lv=M_LEVELS[Math.min(mLvl,M_LEVELS.length-1)];mBig=mRand(lv.bigMin,lv.bigMax);mAdd=mRand(lv.addMin,lv.addMax);mAns=mBig+mAdd;mTapped=0;mAnswered=false;mQnum++;document.getElementById('m-eq-big').textContent=mBig;document.getElementById('m-eq-add').textContent=mAdd;document.getElementById('m-eq-ans').textContent='?';document.getElementById('m-eq-ans').style.color='#b0c4d8';document.getElementById('m-big-label').textContent=mBig;document.getElementById('m-qnum').textContent=mQnum;document.getElementById('m-feedback').textContent='';const bub=document.getElementById('m-bubble');bub.textContent=mBig;bub.classList.remove('popped');document.getElementById('m-hint').textContent=mFrogMode?`Tap each ${ANIMALS[mLvl%ANIMALS.length]} to count on from ${mBig}!`:`How much is ${mBig} + ${mAdd}?`;buildFrogs();buildAnsBtns();document.getElementById('m-prog-fill').style.width=Math.round((mStreak%3)/3*100)+'%';}
+function buildFrogs(){const row=document.getElementById('m-frogs');row.innerHTML='';row.style.display=mFrogMode?'flex':'none';if(!mFrogMode)return;const ani=ANIMALS[mLvl%ANIMALS.length];for(let i=0;i<mAdd;i++){const f=document.createElement('div');f.className='frog';f.textContent=ani;f.dataset.idx=i;f.onclick=()=>tapFrog(f,i);row.appendChild(f);}}
+function tapFrog(el,idx){if(mAnswered)return;if(parseInt(el.dataset.idx)!==mTapped){document.getElementById('m-hint').textContent='Tap them in order! 👈';return;}el.classList.add('tapped');el.onclick=null;mTapped++;const cur=mBig+mTapped;const bub=document.getElementById('m-bubble');bub.textContent=cur;bub.classList.remove('popped');void bub.offsetWidth;bub.classList.add('popped');if(mTapped===mAdd){document.getElementById('m-hint').textContent=`You counted to ${cur}! Pick the answer 👇`;document.getElementById('m-eq-ans').textContent=cur;document.getElementById('m-eq-ans').style.color='#1a2a3a';hlAns(cur);}else document.getElementById('m-hint').textContent=`Keep going… ${mAdd-mTapped} more!`;}
+function buildAnsBtns(){const row=document.getElementById('m-answer-row');row.innerHTML='';const opts=new Set([mAns]);while(opts.size<4){const v=mAns+mRand(-3,3);if(v>0&&v!==mAns)opts.add(v);}[...opts].sort((a,b)=>a-b).forEach(v=>{const b=document.createElement('button');b.className='ans-btn';b.textContent=v;b.onclick=()=>pickAns(b,v);row.appendChild(b);});}
+function hlAns(val){document.querySelectorAll('.ans-btn').forEach(b=>{if(parseInt(b.textContent)===val){b.style.border='2px solid #378ADD';b.style.background='#deeeff';}});}
+function pickAns(btn,val){if(mAnswered)return;mAnswered=true;if(val===mAns){btn.classList.add('correct');mScore++;mStreak++;if(mStreak%3===0&&mLvl<M_LEVELS.length-1)mLvl++;document.getElementById('m-score').textContent=mScore;document.getElementById('m-streak').textContent=mStreak;document.getElementById('m-feedback').textContent=CHEERS[Math.floor(Math.random()*CHEERS.length)];document.getElementById('m-level-name').textContent=M_LEVELS[Math.min(mLvl,M_LEVELS.length-1)].name;const xp=3+(mStreak>1?2:0);earnXP(xp);tickDaily('math',1);setTimeout(newQuestion,1500);}else{btn.classList.add('wrong');mStreak=0;document.getElementById('m-streak').textContent=0;document.getElementById('m-feedback').textContent='Not quite — try again! 💪';mAnswered=false;setTimeout(()=>btn.classList.remove('wrong'),600);}}
+function toggleMode(){mFrogMode=!mFrogMode;document.getElementById('m-mode-btn').textContent=mFrogMode?'🐸 Frog mode':'🔢 Number mode';newQuestion();}
+
+/* READING DATA */
+const R_WORDS={prek:['I','a','and','the','to','is','it','in','my','he','she','we','at','up','on','go','do','can','see','me','be','no','so','an','as','by','or','if','of','us'],k:['all','am','are','ate','black','brown','but','came','did','eat','four','get','good','have','her','here','him','his','how','into','like','look','make','must','new','now','our','out','play','pretty','ran','ride','run','said','saw','say','soon','that','there','they','this','too','under','want','was','well','went','what','white','who','will','with','yes','you']};
+const FISH_ROSTER=[{emoji:'🐠',name:'clownfish',at:1},{emoji:'🐟',name:'blue fish',at:3},{emoji:'🐡',name:'puffer',at:6},{emoji:'🦈',name:'baby shark',at:10},{emoji:'🐙',name:'octopus',at:15},{emoji:'🦑',name:'squid',at:20},{emoji:'🦀',name:'crab',at:25},{emoji:'🐬',name:'dolphin',at:32},{emoji:'🐳',name:'whale',at:40},{emoji:'🦭',name:'seal',at:50},{emoji:'🦞',name:'lobster',at:60},{emoji:'🦋',name:'sea fairy',at:75}];
+
+/* READING STATE */
+let rDeck=[],rIdx=0,rLevel='all',rMastered=new Set(),rCorrectCounts={},rBestStreak=0,rCurStreak=0,fishEarned=[],rFirstTap=true;
+function buildRDeck(level){let words=[];if(level==='all')words=[...R_WORDS.prek,...R_WORDS.k];else if(level==='prek')words=[...R_WORDS.prek];else if(level==='k')words=[...R_WORDS.k];else if(level==='review')words=[...R_WORDS.prek,...R_WORDS.k].filter(w=>!rMastered.has(w));for(let i=words.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[words[i],words[j]]=[words[j],words[i]];}return words;}
+function showCard(){if(!rDeck.length)return;const word=rDeck[rIdx];rFirstTap=true;document.getElementById('card-word').textContent=word;document.getElementById('card-hint').textContent='tap to hear the word';const isK=R_WORDS.k.includes(word);const badge=document.getElementById('card-badge');badge.textContent=isK?'Kindergarten':'Pre-K';badge.className='card-lvl-badge '+(isK?'badge-k':'badge-prek');const card=document.getElementById('flash-card');card.style.background=rMastered.has(word)?'#f0fff8':'#fff';card.style.borderColor=rMastered.has(word)?'#5DCAA5':'#c8dff0';updateRProgress();}
+function flipCard(){const word=rDeck[rIdx];if(rFirstTap){if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(word);u.rate=0.85;u.pitch=1.1;speechSynthesis.speak(u);}document.getElementById('card-hint').textContent='tap again to continue';rFirstTap=false;}else nextCard();}
+function nextCard(){rIdx=(rIdx+1)%rDeck.length;showCard();}
+function prevCard(){rIdx=(rIdx-1+rDeck.length)%rDeck.length;showCard();}
+function shuffleRDeck(){rDeck=buildRDeck(rLevel);rIdx=0;showCard();}
+function setRLevel(level){rLevel=level;document.querySelectorAll('.level-pill').forEach((b,i)=>b.classList.toggle('active',['all','prek','k','review'][i]===level));rDeck=buildRDeck(level);rIdx=0;showCard();}
+function markWord(knew){const word=rDeck[rIdx];if(knew){rCorrectCounts[word]=(rCorrectCounts[word]||0)+1;rCurStreak++;if(rCurStreak>rBestStreak)rBestStreak=rCurStreak;const xp=4+(rCorrectCounts[word]>=3?10:0);earnXP(xp);tickDaily('reading',1);if(rCorrectCounts[word]>=3&&!rMastered.has(word)){rMastered.add(word);awardFish(word);}}else{rCorrectCounts[word]=0;rCurStreak=0;}updateRProgress();nextCard();}
+function updateRProgress(){const total=rDeck.length,done=rDeck.filter(w=>rMastered.has(w)).length;document.getElementById('r-prog-fill').style.width=(total?Math.round(done/total*100):0)+'%';document.getElementById('r-prog-label').textContent=done+' / '+total+' known';}
+
+/* FISH / AQUARIUM */
+function awardFish(word){const total=rMastered.size;const newFish=FISH_ROSTER.find(f=>f.at===total);const fishEmoji=newFish?newFish.emoji:FISH_ROSTER[Math.min(Math.floor(fishEarned.length/3),FISH_ROSTER.length-1)].emoji;fishEarned.push(fishEmoji);gs.fishEarnedCount=fishEarned.length;gsSave();showReward(fishEmoji,newFish?`You unlocked a ${newFish.name}! 🎉`:"Word mastered! 🐠",`"${word}" learned ⭐ +10 XP`);if(fishEarned.length%5===0)setTimeout(celebrate,400);document.getElementById("fish-total").textContent=fishEarned.length;buildFishGrid();updateWordChips();}
+function renderAquarium(){document.getElementById("aq-mastered").textContent=rMastered.size;document.getElementById("aq-fish").textContent=fishEarned.length;document.getElementById("aq-xp-total").textContent=gs.xpTotal||0;buildStreakBadges();renderCalendar();const layer=document.getElementById("tank-fish-layer");layer.innerHTML="";if(!fishEarned.length){layer.innerHTML='<div class="tank-empty"><p>Earn XP in any game to get your first fish! 🐠</p></div>';return;}fishEarned.slice(-20).forEach(emoji=>{const fish=document.createElement("div");fish.className="fish-in-tank";fish.textContent=emoji;const top=15+Math.random()*48,dur=6+Math.random()*8,delay=-Math.random()*8,dist=50+Math.random()*25;fish.style.top=top+"%";fish.style.left=(Math.random()>0.5?"5%":"55%");fish.style.setProperty("--dist",dist+"vw");fish.style.animationDuration=dur+"s";fish.style.animationDelay=delay+"s";layer.appendChild(fish);});}
+function buildFishGrid(){const grid=document.getElementById('fish-unlock-grid');grid.innerHTML='';FISH_ROSTER.forEach(f=>{const u=rMastered.size>=f.at;const item=document.createElement('div');item.className='fish-item';item.innerHTML=`<div class="fish-emoji ${u?'unlocked':''}">${f.emoji}</div><div class="fish-name ${u?'unlocked':''}">${u?f.name:f.at+' words'}</div>`;grid.appendChild(item);});}
+function updateWordChips(){const chips=document.getElementById('word-chips');chips.innerHTML='';rMastered.forEach(w=>{const c=document.createElement('div');c.className='word-chip'+(R_WORDS.k.includes(w)?' k':'');c.textContent=w;chips.appendChild(c);});document.getElementById('words-card').style.display=rMastered.size?'block':'none';}
+
+/* CELEBRATION */
+function celebrate(){const cel=document.getElementById('celebration');document.getElementById('cel-inner').textContent=['🌊','🐠','🌟','🎉','🐬','✨','🏆'][Math.floor(Math.random()*7)];cel.classList.add('show');const c=document.getElementById('stars-container');c.innerHTML='';for(let i=0;i<18;i++){const s=document.createElement('div');s.className='star';s.textContent=['🐠','🌟','✨','🐟','💫','🐡'][Math.floor(Math.random()*6)];s.style.left=Math.random()*90+'%';s.style.top=(Math.random()*80+10)+'%';s.style.animationDelay=Math.random()*0.5+'s';c.appendChild(s);}setTimeout(()=>{cel.classList.remove('show');c.innerHTML='';},2200);}
+
+/* WORD POP */
+const WP_COLORS=['#378ADD','#1D9E75','#E05A00','#7B5EA7','#C0392B','#2471A3','#1A7A4A','#B7770D'];
+let wpWords=[], wpLevel='prek', wpRunning=false, wpScore=0, wpBest=0, wpHearts=3, wpCombo=0, wpPopped=0;
+let wpBubbles=[], wpSpawnTimer=null, wpSpeedTimer=null, wpCurrentTarget='', wpSpawnInterval=2200, wpFallDuration=5500;
+
+function wpSetLevel(lv){
+  wpLevel=lv;
+  document.querySelectorAll('.wp-level-btn').forEach((b,i)=>b.classList.toggle('active',['prek','k','all'][i]===lv));
+}
+
+function wpBuildWordPool(){
+  if(wpLevel==='prek') return [...R_WORDS.prek];
+  if(wpLevel==='k') return [...R_WORDS.k];
+  return [...R_WORDS.prek,...R_WORDS.k];
+}
+
+function wpShuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+function wpStart(){
+  wpWords=wpShuffle(wpBuildWordPool());
+  wpScore=0; wpHearts=3; wpCombo=0; wpPopped=0;
+  wpSpawnInterval=2200; wpFallDuration=5500;
+  wpRunning=true;
+  document.getElementById('wp-score').textContent=0;
+  document.getElementById('wp-hearts').textContent='❤️❤️❤️';
+  document.getElementById('wp-combo').style.display='none';
+  document.getElementById('wp-start-screen').style.display='none';
+  document.getElementById('wp-gameover-screen').style.display='none';
+  // clear old bubbles
+  document.querySelectorAll('.wp-bubble,.wp-pop-text').forEach(el=>el.remove());
+  wpBubbles=[];
+  wpPickTarget();
+  wpScheduleSpawn();
+  wpSpeedTimer=setInterval(wpSpeedUp,8000);
+}
+
+function wpStop(){
+  wpRunning=false;
+  if(wpSpawnTimer)clearTimeout(wpSpawnTimer);
+  if(wpSpeedTimer)clearInterval(wpSpeedTimer);
+  document.querySelectorAll('.wp-bubble,.wp-pop-text').forEach(el=>el.remove());
+  wpBubbles=[];
+}
+
+function wpShowStart(){
+  wpStop();
+  document.getElementById('wp-start-screen').style.display='flex';
+  document.getElementById('wp-gameover-screen').style.display='none';
+}
+
+function wpPickTarget(){
+  // Bias toward unmastered words
+  const pool=wpBuildWordPool();
+  const unmastered=pool.filter(w=>!rMastered.has(w));
+  const src=unmastered.length>2?unmastered:pool;
+  wpCurrentTarget=src[Math.floor(Math.random()*src.length)];
+  const el=document.getElementById('wp-target-word');
+  el.textContent=wpCurrentTarget;
+  el.style.animation='none'; void el.offsetWidth; el.style.animation='';
+  // Speak it
+  if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(wpCurrentTarget);u.rate=0.82;u.pitch=1.15;speechSynthesis.speak(u);}
+}
+
+function wpScheduleSpawn(){
+  if(!wpRunning)return;
+  wpSpawnTimer=setTimeout(()=>{
+    wpSpawnBubble();
+    wpScheduleSpawn();
+  }, wpSpawnInterval - Math.random()*400);
+}
+
+function wpSpawnBubble(){
+  if(!wpRunning)return;
+  const arena=document.getElementById('wp-arena');
+  const aW=arena.offsetWidth, aH=arena.offsetHeight;
+  // Decide if this bubble shows the target word or a distractor
+  const showTarget=wpBubbles.filter(b=>b.word===wpCurrentTarget).length===0||Math.random()<0.55;
+  const pool=wpBuildWordPool().filter(w=>w!==wpCurrentTarget);
+  const word=showTarget?wpCurrentTarget:pool[Math.floor(Math.random()*pool.length)];
+  const size=Math.min(Math.max(72+word.length*4,80),120);
+  const fontSize=size*0.28;
+  const x=size/2+Math.random()*(aW-size);
+  const color=WP_COLORS[Math.floor(Math.random()*WP_COLORS.length)];
+  const el=document.createElement('div');
+  el.className='wp-bubble';
+  el.textContent=word;
+  el.style.cssText=`width:${size}px;height:${size}px;font-size:${fontSize}px;left:${x}px;background:radial-gradient(circle at 35% 35%,${color}cc,${color});animation-duration:${wpFallDuration}ms;`;
+  el.addEventListener('touchstart',e=>{e.preventDefault();wpTapBubble(el,word,x,0);},{passive:false});
+  el.addEventListener('mousedown',()=>wpTapBubble(el,word,x,0));
+  arena.appendChild(el);
+  const id=Date.now()+Math.random();
+  const bubble={el,word,id};
+  wpBubbles.push(bubble);
+  // Remove when animation ends (missed)
+  el.addEventListener('animationend',()=>{
+    if(!el.classList.contains('pop')){
+      wpMissBubble(bubble);
+    }
+    el.remove();
+    wpBubbles=wpBubbles.filter(b=>b.id!==id);
+  });
+}
+
+function wpTapBubble(el,word,x,y){
+  if(!wpRunning||el.classList.contains('pop')||el.classList.contains('miss'))return;
+  const arena=document.getElementById('wp-arena');
+  const rect=el.getBoundingClientRect();
+  const arenaRect=arena.getBoundingClientRect();
+  const px=rect.left-arenaRect.left+rect.width/2;
+  const py=rect.top-arenaRect.top;
+  if(word===wpCurrentTarget){
+    el.classList.add('pop');
+    wpScore+=wpCombo>1?wpCombo:1;
+    wpPopped++;
+    wpCombo++;
+    document.getElementById('wp-score').textContent=wpScore;
+    showWpText('+'+( wpCombo>1?wpCombo:1),px,py,false);
+    if(wpCombo>=3){document.getElementById('wp-combo').style.display='block';document.getElementById('wp-combo-num').textContent=wpCombo;}
+    else document.getElementById('wp-combo').style.display='none';
+    // XP: 2 base + combo bonus, wire into daily
+    const xp = 2 + (wpCombo > 2 ? wpCombo - 2 : 0);
+    earnXP(xp, rect.left + rect.width/2, rect.top);
+    tickDaily('wordpop', 1);
+    // Mark correct in reading too
+    rCorrectCounts[word]=(rCorrectCounts[word]||0)+1;
+    if(rCorrectCounts[word]>=3&&!rMastered.has(word)){rMastered.add(word);awardFish(word);}
+    setTimeout(()=>{wpPickTarget();},300);
+  } else {
+    el.classList.add('miss');
+    wpCombo=0;
+    document.getElementById('wp-combo').style.display='none';
+    showWpText('✗',px,py,true);
+    wpLoseHeart();
+  }
+}
+
+function wpMissBubble(bubble){
+  if(bubble.word!==wpCurrentTarget)return;
+  wpCombo=0;
+  document.getElementById('wp-combo').style.display='none';
+  wpLoseHeart();
+}
+
+function wpLoseHeart(){
+  wpHearts=Math.max(0,wpHearts-1);
+  const hearts=['','❤️','❤️❤️','❤️❤️❤️'][wpHearts]||'';
+  document.getElementById('wp-hearts').textContent=hearts||'💔';
+  if(wpHearts<=0)setTimeout(wpGameOver,500);
+}
+
+function showWpText(txt,x,y,wrong){
+  const arena=document.getElementById('wp-arena');
+  const el=document.createElement('div');
+  el.className='wp-pop-text'+(wrong?' wp-wrong-text':'');
+  el.textContent=txt;
+  el.style.left=x+'px';
+  el.style.top=y+'px';
+  arena.appendChild(el);
+  el.addEventListener('animationend',()=>el.remove());
+}
+
+function wpSpeedUp(){
+  if(!wpRunning)return;
+  wpSpawnInterval=Math.max(900,wpSpawnInterval-180);
+  wpFallDuration=Math.max(2800,wpFallDuration-350);
+}
+
+function wpGameOver(){
+  wpStop();
+  if(wpScore>wpBest){wpBest=wpScore;document.getElementById('wp-best').textContent=wpBest;}
+  document.getElementById('wp-final-score').textContent=wpScore;
+  document.getElementById('wp-final-best').textContent=wpBest;
+  document.getElementById('wp-final-popped').textContent=wpPopped;
+  document.getElementById('wp-gameover-screen').style.display='flex';
+  if(wpScore>0&&wpScore>=wpBest)setTimeout(celebrate,300);
+}
+
+
+/* ═══════════════════════════════════════════
+   UNIFIED XP + STREAK + DAILY SYSTEM
+═══════════════════════════════════════════ */
+const XP_PER_FISH = 25;
+const STREAK_MILESTONES = [
+  {days:3,  emoji:'🌱', title:'3 Day Streak!',  msg:'Amazing start! You earned a bonus fish! 🐠'},
+  {days:7,  emoji:'🔥', title:'One Week!',       msg:'A whole week! Bonus fish for you! 🐠🐠'},
+  {days:14, emoji:'💪', title:'Two Weeks!',      msg:'Two weeks strong! Here\'s 3 bonus fish! 🐠🐠🐠'},
+  {days:30, emoji:'🏆', title:'30 Day Champion!',msg:'Incredible! 5 bonus fish! 🐠🐠🐠🐠🐠'},
+];
+const DAILY_TARGETS = {writing:3, math:5, reading:5, wordpop:10};
+
+// Persisted state (localStorage)
+let gs = {
+  xp: 0, xpTotal: 0, fishEarnedCount: 0,
+  streak: 0, lastDate: '',
+  daily: {writing:0, math:0, reading:0, wordpop:0},
+  dailyBonusGiven: false,
+  streakMilestonesShown: [],
+  history: {},        // { 'YYYY-MM-DD': { reps: number, complete: boolean } }
+  longestStreak: 0,   // best practice streak ever, for display
+  firstDate: '',      // first practiced day → baseline for "missed" days
+};
+
+function dateKey(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+
+function gsLoad() {
+  try {
+    const s = localStorage.getItem('learnplay_gs');
+    if (s) gs = {...gs, ...JSON.parse(s)};
+  } catch(e) {}
+  // Daily reset check — clear the day's goal counters when the date rolls over.
+  // (Streak is derived from practice history, not from app opens — see recomputeStreak.)
+  const today = dateKey();
+  if (gs.lastDate !== today) {
+    gs.daily = {writing:0, math:0, reading:0, wordpop:0};
+    gs.dailyBonusGiven = false;
+    gs.lastDate = today;
+    gsSave();
+  }
+  recomputeStreak();
+}
+
+function recomputeStreak() {
+  // Consecutive practiced days ending today, or yesterday if today isn't done yet
+  // (so an in-progress day never breaks the streak).
+  let n = 0, d = new Date();
+  if (!gs.history[dateKey(d)]) d.setDate(d.getDate()-1);
+  while (gs.history[dateKey(d)]) { n++; d.setDate(d.getDate()-1); }
+  gs.streak = n;
+  if (n > (gs.longestStreak||0)) gs.longestStreak = n;
+  gsSave();
+  const el = document.getElementById('streak-count'); if (el) el.textContent = n;
+}
+function gsSave() {
+  try { localStorage.setItem('learnplay_gs', JSON.stringify(gs)); } catch(e) {}
+}
+
+function earnXP(amount, sourceX, sourceY) {
+  gs.xp += amount;
+  gs.xpTotal += amount;
+  // Fish milestone
+  while (gs.xp >= XP_PER_FISH) {
+    gs.xp -= XP_PER_FISH;
+    const fi = FISH_ROSTER[Math.min(Math.floor(fishEarned.length/3), FISH_ROSTER.length-1)];
+    fishEarned.push(fi.emoji);
+    gs.fishEarnedCount = fishEarned.length;
+    document.getElementById('fish-total').textContent = fishEarned.length;
+    showReward(fi.emoji, 'You earned a fish! 🎉', '+'+amount+' XP got you here');
+  }
+  gsSave();
+  updateXPBar();
+  if (sourceX !== undefined) showXPFloat('+'+amount+' XP', sourceX, sourceY);
+}
+
+function updateXPBar() {
+  const pct = Math.min((gs.xp / XP_PER_FISH) * 100, 100);
+  document.getElementById('xp-bar-fill').style.width = pct + '%';
+  document.getElementById('xp-label').textContent = gs.xp + ' / ' + XP_PER_FISH + ' XP';
+  document.getElementById('streak-count').textContent = gs.streak || 0;
+  document.getElementById('fish-total').textContent = fishEarned.length;
+  document.getElementById('aq-xp-total').textContent = gs.xpTotal || 0;
+}
+
+function tickDaily(game, amount) {
+  if (!gs.daily) gs.daily = {writing:0,math:0,reading:0,wordpop:0};
+  gs.daily[game] = Math.min((gs.daily[game]||0) + amount, DAILY_TARGETS[game]);
+  // Record practice in the per-day history (powers the streak + calendar).
+  if (!gs.history) gs.history = {};
+  const k = dateKey();
+  if (!gs.history[k]) gs.history[k] = {reps:0, complete:false};
+  gs.history[k].reps += amount;
+  if (!gs.firstDate) gs.firstDate = k;
+  gsSave();
+  recomputeStreak();
+  checkStreakMilestone();
+  updateDailyGoals();
+  checkAllDailyDone();
+  if (document.getElementById('screen-aquarium').classList.contains('active')) renderCalendar();
+}
+
+function updateDailyGoals() {
+  const games = ['writing','math','reading','wordpop'];
+  games.forEach(g => {
+    const val = gs.daily[g]||0, target = DAILY_TARGETS[g];
+    const pct = Math.min(val/target*100, 100);
+    const done = val >= target;
+    const el = document.getElementById('dg-'+g);
+    if (el) el.classList.toggle('dg-done', done);
+    const fill = document.getElementById('dg-'+g+'-fill');
+    if (fill) { fill.style.width = pct+'%'; }
+    const lbl = document.getElementById('dg-'+g+'-lbl');
+    if (lbl) lbl.textContent = done ? '✓' : val+'/'+target;
+  });
+}
+
+function checkAllDailyDone() {
+  if (gs.dailyBonusGiven) return;
+  const allDone = Object.keys(DAILY_TARGETS).every(g => (gs.daily[g]||0) >= DAILY_TARGETS[g]);
+  if (allDone) {
+    gs.dailyBonusGiven = true;
+    const k = dateKey();
+    if (gs.history && gs.history[k]) gs.history[k].complete = true;
+    gsSave();
+    if (document.getElementById('screen-aquarium').classList.contains('active')) renderCalendar();
+    document.getElementById('daily-bonus-pill').style.display = 'flex';
+    // Award 3 bonus fish directly
+    for (let i = 0; i < 3; i++) {
+      setTimeout(() => {
+        const fi = FISH_ROSTER[Math.min(Math.floor(fishEarned.length/3), FISH_ROSTER.length-1)];
+        fishEarned.push(fi.emoji);
+        gs.fishEarnedCount = fishEarned.length;
+        document.getElementById('fish-total').textContent = fishEarned.length;
+      }, i * 600);
+    }
+    setTimeout(() => {
+      showStreakOverlay('🎁', 'Daily Goal Complete!', 'All 4 activities done! You earned 3 bonus fish! 🐠🐠🐠');
+      celebrate();
+    }, 400);
+  }
+}
+
+function checkStreakMilestone() {
+  const s = gs.streak;
+  const milestone = STREAK_MILESTONES.find(m => m.days === s && !(gs.streakMilestonesShown||[]).includes(s));
+  if (!milestone) return;
+  gs.streakMilestonesShown = [...(gs.streakMilestonesShown||[]), s];
+  gsSave();
+  const bonusCount = s === 3 ? 1 : s === 7 ? 2 : s === 14 ? 3 : 5;
+  for (let i = 0; i < bonusCount; i++) {
+    const fi = FISH_ROSTER[Math.min(Math.floor(fishEarned.length/3), FISH_ROSTER.length-1)];
+    fishEarned.push(fi.emoji);
+    gs.fishEarnedCount = fishEarned.length;
+  }
+  document.getElementById('fish-total').textContent = fishEarned.length;
+  showStreakOverlay(milestone.emoji, milestone.title, milestone.msg);
+  celebrate();
+}
+
+function showStreakOverlay(emoji, title, sub) {
+  document.getElementById('streak-overlay-emoji').textContent = emoji;
+  document.getElementById('streak-overlay-title').textContent = title;
+  document.getElementById('streak-overlay-sub').textContent = sub;
+  document.getElementById('streak-overlay').classList.add('show');
+}
+
+function showXPFloat(txt, x, y) {
+  const el = document.createElement('div');
+  el.className = 'xp-float';
+  el.textContent = txt;
+  el.style.left = (x || window.innerWidth/2) + 'px';
+  el.style.top = (y || 120) + 'px';
+  document.body.appendChild(el);
+  el.addEventListener('animationend', () => el.remove());
+}
+
+function showReward(emoji, msg, sub) {
+  document.getElementById('reward-fish').textContent = emoji;
+  document.getElementById('reward-msg').textContent = msg;
+  document.getElementById('reward-sub').textContent = sub;
+  const ov = document.getElementById('reward-overlay');
+  ov.classList.add('show');
+  setTimeout(() => ov.classList.remove('show'), 2200);
+}
+
+function buildStreakBadges() {
+  const c = document.getElementById('streak-badges');
+  if (!c) return;
+  c.innerHTML = '';
+  STREAK_MILESTONES.forEach(m => {
+    const earned = gs.streak >= m.days;
+    const item = document.createElement('div');
+    item.className = 'streak-badge-item';
+    item.innerHTML = `<div class="streak-badge-icon ${earned?'earned':''}">${m.emoji}</div><div class="streak-badge-lbl ${earned?'earned':''}">${m.days} days</div>`;
+    c.appendChild(item);
+  });
+}
+
+/* ═══════════════════════════════════════════
+   PRACTICE CALENDAR
+═══════════════════════════════════════════ */
+const CAL_MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+let calYear, calMonth; // viewed month
+
+function calShift(delta){
+  calMonth+=delta;
+  if(calMonth<0){calMonth=11;calYear--;}
+  else if(calMonth>11){calMonth=0;calYear++;}
+  renderCalendar();
+}
+
+function calSummary(){
+  const hist=gs.history||{};
+  const practiced=Object.keys(hist).length;
+  // Count missed days from firstDate up to (but not including) today.
+  let missed=0;
+  if(gs.firstDate){
+    const todayK=dateKey();
+    let d=new Date(gs.firstDate+'T00:00:00');
+    const end=new Date(todayK+'T00:00:00');
+    while(d<end){const k=dateKey(d);if(!hist[k])missed++;d.setDate(d.getDate()+1);}
+  }
+  const el=document.getElementById('cal-summary');
+  if(!el)return;
+  el.innerHTML=
+    `<div class="cal-stat"><span class="cal-stat-val">🔥 ${gs.streak||0}</span><span class="cal-stat-lbl">current</span></div>`+
+    `<div class="cal-stat"><span class="cal-stat-val">🏆 ${gs.longestStreak||0}</span><span class="cal-stat-lbl">best</span></div>`+
+    `<div class="cal-stat"><span class="cal-stat-val">✅ ${practiced}</span><span class="cal-stat-lbl">practiced</span></div>`+
+    `<div class="cal-stat"><span class="cal-stat-val">🚫 ${missed}</span><span class="cal-stat-lbl">missed</span></div>`;
+}
+
+function renderCalendar(){
+  const grid=document.getElementById('cal-grid');
+  if(!grid)return;
+  if(calYear===undefined){const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();}
+  document.getElementById('cal-title').textContent=CAL_MONTHS[calMonth]+' '+calYear;
+  calSummary();
+  const hist=gs.history||{};
+  const todayK=dateKey();
+  const first=new Date(calYear,calMonth,1);
+  const startDow=first.getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  grid.innerHTML='';
+  for(let i=0;i<startDow;i++){const b=document.createElement('div');b.className='cal-cell cal-blank';grid.appendChild(b);}
+  for(let day=1;day<=daysInMonth;day++){
+    const k=dateKey(new Date(calYear,calMonth,day));
+    const cell=document.createElement('div');
+    cell.className='cal-cell';
+    let mark='';
+    if(k>todayK){cell.classList.add('cal-future');}
+    else if(hist[k]&&hist[k].complete){cell.classList.add('cal-goal');mark='🌟';}
+    else if(hist[k]&&hist[k].reps>0){cell.classList.add('cal-done');}
+    else if(gs.firstDate&&k>=gs.firstDate&&k<todayK){cell.classList.add('cal-missed');}
+    else {cell.classList.add('cal-none');}
+    if(k===todayK)cell.classList.add('cal-today');
+    cell.innerHTML=`<span class="cal-day">${day}</span>${mark?`<span class="cal-mark">${mark}</span>`:''}`;
+    grid.appendChild(cell);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+gsLoad();
+setCanvasSize();
+window.addEventListener('resize',()=>{setCanvasSize();drawGuideBackground();buildStrokeDots();});
+buildCharSelector();drawGuideBackground();buildStrokeDots();
+rDeck=buildRDeck('all');showCard();
+newQuestion();buildFishGrid();buildStreakBadges();
+(function(){const now=new Date();calYear=now.getFullYear();calMonth=now.getMonth();})();
+updateXPBar();updateDailyGoals();
+if(gs.daily && gs.dailyBonusGiven) document.getElementById('daily-bonus-pill').style.display='flex';
+checkStreakMilestone();
+
+</script>
+</body>
+</html>
