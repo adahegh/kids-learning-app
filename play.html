@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Learn & Play">
-<meta name="description" content="Learn & Play — a free learning app for Pre-K to Grade 1 kids: letter tracing, math games, Dolch sight words, and an aquarium full of rewards.">
+<meta name="description" content="Learn & Play — a free learning app for kids ages 4–5: letter tracing, math games, Dolch sight words, and an aquarium full of rewards.">
 <title>Learn & Play ✏️</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -1159,7 +1159,7 @@ const FISH_ROSTER=[{emoji:'🐠',name:'clownfish',at:1},{emoji:'🐟',name:'blue
 let rDeck=[],rIdx=0,rLevel='all',rMastered=new Set(),rCorrectCounts={},rBestStreak=0,rCurStreak=0,fishEarned=[],rFirstTap=true,rStillLearning=new Set();
 function buildRDeck(level){let words=[];if(level==='all')words=rAllWords();else if(level==='still')words=rAllWords().filter(w=>rStillLearning.has(w));else words=[...R_WORDS[level]];for(let i=words.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[words[i],words[j]]=[words[j],words[i]];}return words;}
 function showCard(){const card=document.getElementById('flash-card');if(!rDeck.length){document.getElementById('card-word').textContent='🌟';document.getElementById('card-hint').textContent=rLevel==='still'?'No words here yet — tap "😅 Still learning" on a card to add it':'No words here yet';document.getElementById('card-badge').textContent='';card.style.background='#fff';card.style.borderColor='#c8dff0';updateRProgress();return;}const word=rDeck[rIdx];rFirstTap=true;document.getElementById('card-word').textContent=word;document.getElementById('card-hint').textContent='tap to hear the word';const lvl=rWordLevel(word);const badge=document.getElementById('card-badge');badge.textContent=R_LEVEL_NAMES[lvl];badge.className='card-lvl-badge badge-'+lvl;card.style.background=rMastered.has(word)?'#f0fff8':'#fff';card.style.borderColor=rMastered.has(word)?'#5DCAA5':'#c8dff0';updateRProgress();}
-function flipCard(){if(!rDeck.length)return;const word=rDeck[rIdx];if(rFirstTap){if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(word);u.rate=0.85;u.pitch=1.1;speechSynthesis.speak(u);}document.getElementById('card-hint').textContent='tap again to continue';rFirstTap=false;}else nextCard();}
+function flipCard(){if(!rDeck.length)return;const word=rDeck[rIdx];if(rFirstTap){if('speechSynthesis' in window){const u=new SpeechSynthesisUtterance(ttsFix(word));u.rate=0.85;u.pitch=1.1;speechSynthesis.speak(u);}document.getElementById('card-hint').textContent='tap again to continue';rFirstTap=false;}else nextCard();}
 function nextCard(){rIdx=(rIdx+1)%rDeck.length;showCard();}
 function prevCard(){rIdx=(rIdx-1+rDeck.length)%rDeck.length;showCard();}
 function shuffleRDeck(){rDeck=buildRDeck(rLevel);rIdx=0;showCard();}
@@ -1172,7 +1172,12 @@ let scMode='listen', scLevel='prek', scAnswer='', scAnswered=false, scStarCount=
 function scWordPool(){return R_WORDS[scLevel]?[...R_WORDS[scLevel]]:rAllWords();}
 function scSetLevel(lv){scLevel=lv;document.querySelectorAll('#reading-starcatcher .level-pill').forEach((b,i)=>b.classList.toggle('active',['prek','k','g1','all'][i]===lv));scNewRound();}
 function scShuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
-function scSpeak(text){if(!('speechSynthesis' in window)||!text)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=0.8;u.pitch=1.1;u.lang='en-US';speechSynthesis.speak(u);}
+// Spoken-only pronunciation fixes: TTS reads isolated words in their stressed
+// "citation" form ("the"→"thee", "a"→"ay") with no sentence context to reduce them.
+// Respell here to force the everyday pronunciation kids are taught. Display text is untouched.
+const PRONOUNCE={'the':'thuh'};
+function ttsFix(t){let s=String(t);for(const w in PRONOUNCE)s=s.replace(new RegExp('\\b'+w+'\\b','gi'),PRONOUNCE[w]);return s;}
+function scSpeak(text){if(!('speechSynthesis' in window)||!text)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(ttsFix(text));u.rate=0.8;u.pitch=1.1;u.lang='en-US';speechSynthesis.speak(u);}
 function scRenderStars(){const el=document.getElementById('sc-stars');const max=12;let s='';for(let i=0;i<Math.min(scStarCount,max);i++)s+='⭐';if(scStarCount>max)s+=' +'+(scStarCount-max);el.textContent=s||'Catch your first star! ✨';}
 function scSetMode(mode){scMode=mode;document.querySelectorAll('.sc-mode-btn').forEach((b,i)=>b.classList.toggle('active',['listen','match'][i]===mode));scNewRound();}
 function scNewRound(){
@@ -1293,7 +1298,7 @@ function wpPickTarget(){
   el.textContent=wpCurrentTarget;
   el.style.animation='none'; void el.offsetWidth; el.style.animation='';
   // Speak it
-  if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(wpCurrentTarget);u.rate=0.82;u.pitch=1.15;speechSynthesis.speak(u);}
+  if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(ttsFix(wpCurrentTarget));u.rate=0.82;u.pitch=1.15;speechSynthesis.speak(u);}
 }
 
 function wpScheduleSpawn(){
