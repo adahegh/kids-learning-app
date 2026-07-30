@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-"Learn & Play" — a kids' learning app (writing, math, reading games with an aquarium reward system) built as a **single self-contained HTML file** (`index.html`) with zero dependencies: all CSS in one `<style>` block, all JS in one `<script>` block, no build step, no tests, no lint. Tabs: Writing, Math (plus / minus / number bonds), Reading (Flashcards / Star Catcher / Word Pop), Flip It (letter-reversal practice: Trace It / Spot It / Sound Sort), Aquarium.
+"Learn & Play" — a kids' learning app (writing, math, reading games with an aquarium reward system). Two self-contained HTML files, zero dependencies, no build step, no tests, no lint:
+- `index.html` — parent-facing landing page (what gets shared; explains the app, links to the game).
+- `play.html` — the app itself: all CSS in one `<style>` block, all JS in one `<script>` block. Tabs: Writing, Math (plus / minus / number bonds), Reading (Flashcards / Star Catcher / Word Pop), Flip It (letter-reversal practice: Trace It / Spot It / Sound Sort), Aquarium.
 
-Deployed via **GitHub Pages** from `main` (repo `adahegh/kids-learning-app`) — pushing to `main` publishes. A GoatCounter analytics script tag sits before `</body>` (cookie-free pageview counts; ignores localhost). All state persists to the localStorage key `learnplay_gs`.
+Deployed via **GitHub Pages** from `main` (repo `adahegh/kids-learning-app`) — pushing to `main` publishes. Both pages carry a GoatCounter analytics script tag before `</body>` (site code `adahejj`; cookie-free pageview counts; ignores localhost). All game state persists to the localStorage key `learnplay_gs`.
 
 ## Running
 
@@ -18,7 +20,7 @@ python3 -m http.server 4599   # port from .claude/launch.json
 
 Target device is an iPad/touch screen (apple-mobile-web-app meta tags, touch + mouse event handlers, `speechSynthesis` for word audio). Test touch interactions when changing canvas or bubble games.
 
-## Architecture (inside index.html)
+## Architecture (inside play.html)
 
 **Screens & navigation.** Each game is a `<div class="screen" id="screen-*">`; `switchMain(tab)` toggles `.active` and runs per-screen setup (canvas sizing, render). Bottom nav tabs call it.
 
