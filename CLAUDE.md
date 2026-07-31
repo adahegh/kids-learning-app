@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Learn & Play" — a kids' learning app (writing, math, reading games with an aquarium reward system). Two self-contained HTML files, zero dependencies, no build step, no tests, no lint:
 - `index.html` — parent-facing landing page (what gets shared; explains the app, links to the game).
-- `play.html` — the app itself: all CSS in one `<style>` block, all JS in one `<script>` block. Tabs: Writing, Math (plus / minus / number bonds), 123 Counting (Next Number / Hundred Chart / Blast Off backwards-counting, prefix `ct*`, with bilingual English+Mandarin number audio via `ctSpeak()`/`numToZh()` — toggle persisted as `gs.zhAudio`), Reading (Flashcards / Star Catcher / Word Pop), Flip It (letter-reversal practice: Trace It / Spot It / Sound Sort), Aquarium.
+- `play.html` — the app itself: all CSS in one `<style>` block, all JS in one `<script>` block. Tabs (nav order): Reading (Flashcards / Star Catcher / Word Pop), Math (Plus / Minus / Number Bonds / 123 counting mode — Next Number, Hundred Chart, Blast Off backwards-counting, prefix `ct*`, with bilingual English+Mandarin number audio via `ctSpeak()`/`numToZh()` — toggle persisted as `gs.zhAudio`), Writing (upper / lower / numbers / teens tracing, plus a Flip It sub-tab for letter-reversal practice: Trace It / Spot It / Sound Sort), Aquarium.
 
 Deployed via **GitHub Pages** from `main` (repo `adahegh/kids-learning-app`) — pushing to `main` publishes. Both pages carry a GoatCounter analytics script tag before `</body>` (site code `adahejj`; cookie-free pageview counts; ignores localhost). All game state persists to the localStorage key `learnplay_gs`.
 

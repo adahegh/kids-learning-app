@@ -33,7 +33,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .screen.active { display: block; }
 
 /* WRITING */
-#sub-tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; }
+#sub-tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
 .sub-tab { padding: 7px 16px; border-radius: 99px; border: 1.5px solid #c8d8e8; background: #fff; font-size: 15px; font-weight: 600; color: #667788; cursor: pointer; transition: all 0.15s; touch-action: manipulation; }
 .sub-tab.active { background: #185FA5; border-color: #185FA5; color: #fff; }
 #char-selector { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 0 0 12px; }
@@ -398,24 +398,72 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 </div>
 
 <!-- WRITING -->
-<div id="screen-writing" class="screen active">
+<div id="screen-writing" class="screen">
   <div id="sub-tabs">
     <button class="sub-tab active" onclick="switchSub('upper')">A B C</button>
     <button class="sub-tab" onclick="switchSub('lower')">a b c</button>
     <button class="sub-tab" onclick="switchSub('numbers')">1 2 3</button>
     <button class="sub-tab" onclick="switchSub('teens')">10-20</button>
+    <button class="sub-tab" onclick="switchSub('flip')">🪞 Flip It</button>
   </div>
-  <div id="char-selector"></div>
-  <div id="canvas-wrapper">
-    <canvas id="guide-canvas"></canvas>
-    <canvas id="draw-canvas"></canvas>
+  <div id="writing-main">
+    <div id="char-selector"></div>
+    <div id="canvas-wrapper">
+      <canvas id="guide-canvas"></canvas>
+      <canvas id="draw-canvas"></canvas>
+    </div>
+    <div id="stroke-indicators"></div>
+    <div id="w-instructions">Trace stroke 1 – follow the blue dots!</div>
+    <div id="w-btn-row">
+      <button class="w-btn" onclick="showGuide()">👀 Show me</button>
+      <button class="w-btn" onclick="clearDrawing()">🔄 Try again</button>
+      <button class="w-btn primary" onclick="nextChar()">Next ➡</button>
+    </div>
   </div>
-  <div id="stroke-indicators"></div>
-  <div id="w-instructions">Trace stroke 1 – follow the blue dots!</div>
-  <div id="w-btn-row">
-    <button class="w-btn" onclick="showGuide()">👀 Show me</button>
-    <button class="w-btn" onclick="clearDrawing()">🔄 Try again</button>
-    <button class="w-btn primary" onclick="nextChar()">Next ➡</button>
+
+  <!-- FLIP IT (letter-reversal practice) -->
+  <div id="writing-flip" style="display:none">
+  <div id="flip-sub-tabs">
+    <button class="flip-sub-tab active" onclick="switchFlipSub('trace')">✏️ Trace It</button>
+    <button class="flip-sub-tab" onclick="switchFlipSub('spot')">🔍 Spot It</button>
+    <button class="flip-sub-tab" onclick="switchFlipSub('sort')">👂 Sound Sort</button>
+  </div>
+
+  <!-- TRACE IT -->
+  <div id="flip-trace" class="flip-panel">
+    <div class="flip-letter-row" id="ft-letter-row"></div>
+    <div class="flip-mnemonic" id="ft-mnemonic">line first, then the ball →</div>
+    <div id="ft-canvas-wrapper">
+      <canvas id="ft-guide-canvas"></canvas>
+      <canvas id="ft-draw-canvas"></canvas>
+    </div>
+    <div class="flip-hint" id="ft-hint">Start at the big green dot! 👇</div>
+    <div class="flip-btn-row">
+      <button class="flip-btn" onclick="ftShowGuide()">👀 Show me</button>
+      <button class="flip-btn" onclick="ftReset()">🔄 Try again</button>
+    </div>
+  </div>
+
+  <!-- SPOT IT -->
+  <div id="flip-spot" class="flip-panel" style="display:none">
+    <div class="flip-spot-prompt">Tap the one facing the <strong>right way!</strong></div>
+    <div class="flip-spot-target" id="fs-target">b</div>
+    <button class="sc-speak-btn" onclick="fsSpeakLetter()">🔊 Hear it</button>
+    <div class="flip-spot-grid" id="fs-grid"></div>
+    <div class="flip-feedback" id="fs-feedback"></div>
+  </div>
+
+  <!-- SOUND SORT -->
+  <div id="flip-sort" class="flip-panel" style="display:none">
+    <div class="flip-sort-prompt">Which letter does this word start with?</div>
+    <div class="flip-sort-word" id="fso-word">ball</div>
+    <button class="sc-speak-btn" onclick="fsoSpeak()">🔊 Say it again</button>
+    <div class="flip-sort-choices" id="fso-choices"></div>
+    <div class="flip-feedback" id="fso-feedback"></div>
+    <div class="flip-btn-row">
+      <button class="flip-btn hidden" id="fso-next" onclick="newSortQuestion()">Next ▶</button>
+    </div>
+  </div>
   </div>
 </div>
 
@@ -425,6 +473,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <button class="math-mode-tab active" onclick="setMathMode('plus')">➕ Plus</button>
     <button class="math-mode-tab" onclick="setMathMode('minus')">➖ Minus</button>
     <button class="math-mode-tab" onclick="setMathMode('bonds')">🧩 Number Bonds</button>
+    <button class="math-mode-tab" onclick="setMathMode('counting')">💯 123</button>
   </div>
 
   <div class="stats-row">
@@ -515,10 +564,60 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <button class="m-btn" onclick="newBondsQuestion()">🔄 New question</button>
     </div>
   </div>
+
+  <!-- COUNTING (123) MODE -->
+  <div id="math-counting" class="math-mode-panel" style="display:none">
+  <div id="ct-sub-tabs">
+    <button class="ct-sub-tab active" onclick="switchCtSub('next')">🔢 Next Number</button>
+    <button class="ct-sub-tab" onclick="switchCtSub('chart')">💯 Hundred Chart</button>
+    <button class="ct-sub-tab" onclick="switchCtSub('blast')">🚀 Blast Off</button>
+  </div>
+  <div id="ct-zh-row"><button id="ct-zh-btn" class="on" onclick="toggleZh()">🔊 中文 on</button></div>
+
+  <!-- NEXT NUMBER -->
+  <div id="ct-next" class="ct-panel">
+    <div class="problem-card">
+      <div class="hint-text" id="ctn-hint">What comes next? Tap the numbers to hear them!</div>
+      <div class="ctn-seq" id="ctn-seq"></div>
+      <div class="ct-caption" id="ctn-caption"></div>
+    </div>
+    <div class="m-feedback" id="ctn-feedback"></div>
+    <div class="answer-row" id="ctn-answers"></div>
+    <div class="m-btn-row"><button class="m-btn" onclick="ctnNew()">🔄 New question</button></div>
+  </div>
+
+  <!-- HUNDRED CHART -->
+  <div id="ct-chart" class="ct-panel" style="display:none">
+    <div class="level-pills">
+      <button class="level-pill active" onclick="cthSetMode('count')">👆 Count along</button>
+      <button class="level-pill" onclick="cthSetMode('missing')">🕵️ Missing numbers</button>
+    </div>
+    <div class="hint-text" id="cth-hint">Tap 1, 2, 3 … all the way to 100!</div>
+    <div class="cth-grid" id="cth-grid"></div>
+    <div class="answer-row" id="cth-answers"></div>
+    <div class="m-feedback" id="cth-feedback"></div>
+    <div class="m-btn-row"><button class="m-btn" onclick="cthReset()">↺ Start over</button></div>
+  </div>
+
+  <!-- BLAST OFF -->
+  <div id="ct-blast" class="ct-panel" style="display:none">
+    <div class="level-pills">
+      <button class="level-pill active" onclick="ctbSetLevel(5)">from 5</button>
+      <button class="level-pill" onclick="ctbSetLevel(10)">from 10</button>
+      <button class="level-pill" onclick="ctbSetLevel(20)">from 20</button>
+    </div>
+    <div class="problem-card">
+      <div class="hint-text" id="ctb-hint">Count DOWN to launch the rocket! 👇</div>
+      <div class="ctb-row" id="ctb-row"></div>
+      <div id="ctb-pad"><div id="ctb-rocket">🚀</div></div>
+    </div>
+    <div class="m-feedback" id="ctb-feedback"></div>
+  </div>
+  </div>
 </div>
 
 <!-- READING -->
-<div id="screen-reading" class="screen">
+<div id="screen-reading" class="screen active">
   <div id="reading-sub-tabs">
     <button class="reading-sub-tab active" onclick="switchReadingSub('flashcards')">📇 Flashcards</button>
     <button class="reading-sub-tab" onclick="switchReadingSub('starcatcher')">⭐ Star Catcher</button>
@@ -620,106 +719,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   </div>
 </div>
 
-<!-- FLIP IT -->
-<div id="screen-flipit" class="screen">
-  <div id="flip-sub-tabs">
-    <button class="flip-sub-tab active" onclick="switchFlipSub('trace')">✏️ Trace It</button>
-    <button class="flip-sub-tab" onclick="switchFlipSub('spot')">🔍 Spot It</button>
-    <button class="flip-sub-tab" onclick="switchFlipSub('sort')">👂 Sound Sort</button>
-  </div>
-
-  <!-- TRACE IT -->
-  <div id="flip-trace" class="flip-panel">
-    <div class="flip-letter-row" id="ft-letter-row"></div>
-    <div class="flip-mnemonic" id="ft-mnemonic">line first, then the ball →</div>
-    <div id="ft-canvas-wrapper">
-      <canvas id="ft-guide-canvas"></canvas>
-      <canvas id="ft-draw-canvas"></canvas>
-    </div>
-    <div class="flip-hint" id="ft-hint">Start at the big green dot! 👇</div>
-    <div class="flip-btn-row">
-      <button class="flip-btn" onclick="ftShowGuide()">👀 Show me</button>
-      <button class="flip-btn" onclick="ftReset()">🔄 Try again</button>
-    </div>
-  </div>
-
-  <!-- SPOT IT -->
-  <div id="flip-spot" class="flip-panel" style="display:none">
-    <div class="flip-spot-prompt">Tap the one facing the <strong>right way!</strong></div>
-    <div class="flip-spot-target" id="fs-target">b</div>
-    <button class="sc-speak-btn" onclick="fsSpeakLetter()">🔊 Hear it</button>
-    <div class="flip-spot-grid" id="fs-grid"></div>
-    <div class="flip-feedback" id="fs-feedback"></div>
-  </div>
-
-  <!-- SOUND SORT -->
-  <div id="flip-sort" class="flip-panel" style="display:none">
-    <div class="flip-sort-prompt">Which letter does this word start with?</div>
-    <div class="flip-sort-word" id="fso-word">ball</div>
-    <button class="sc-speak-btn" onclick="fsoSpeak()">🔊 Say it again</button>
-    <div class="flip-sort-choices" id="fso-choices"></div>
-    <div class="flip-feedback" id="fso-feedback"></div>
-    <div class="flip-btn-row">
-      <button class="flip-btn hidden" id="fso-next" onclick="newSortQuestion()">Next ▶</button>
-    </div>
-  </div>
-</div>
-
-<!-- COUNTING (123) -->
-<div id="screen-counting" class="screen">
-  <div id="ct-sub-tabs">
-    <button class="ct-sub-tab active" onclick="switchCtSub('next')">🔢 Next Number</button>
-    <button class="ct-sub-tab" onclick="switchCtSub('chart')">💯 Hundred Chart</button>
-    <button class="ct-sub-tab" onclick="switchCtSub('blast')">🚀 Blast Off</button>
-  </div>
-  <div id="ct-zh-row"><button id="ct-zh-btn" class="on" onclick="toggleZh()">🔊 中文 on</button></div>
-
-  <!-- NEXT NUMBER -->
-  <div id="ct-next" class="ct-panel">
-    <div class="level-pills">
-      <button class="level-pill active" onclick="ctnSetLevel(30)">to 30</button>
-      <button class="level-pill" onclick="ctnSetLevel(60)">to 60</button>
-      <button class="level-pill" onclick="ctnSetLevel(100)">to 100</button>
-    </div>
-    <div class="problem-card">
-      <div class="hint-text" id="ctn-hint">What comes next? Tap the numbers to hear them!</div>
-      <div class="ctn-seq" id="ctn-seq"></div>
-      <div class="ct-caption" id="ctn-caption"></div>
-    </div>
-    <div class="m-feedback" id="ctn-feedback"></div>
-    <div class="answer-row" id="ctn-answers"></div>
-    <div class="m-btn-row"><button class="m-btn" onclick="ctnNew()">🔄 New question</button></div>
-  </div>
-
-  <!-- HUNDRED CHART -->
-  <div id="ct-chart" class="ct-panel" style="display:none">
-    <div class="level-pills">
-      <button class="level-pill active" onclick="cthSetMode('count')">👆 Count along</button>
-      <button class="level-pill" onclick="cthSetMode('missing')">🕵️ Missing numbers</button>
-    </div>
-    <div class="hint-text" id="cth-hint">Tap 1, 2, 3 … all the way to 100!</div>
-    <div class="cth-grid" id="cth-grid"></div>
-    <div class="answer-row" id="cth-answers"></div>
-    <div class="m-feedback" id="cth-feedback"></div>
-    <div class="m-btn-row"><button class="m-btn" onclick="cthReset()">↺ Start over</button></div>
-  </div>
-
-  <!-- BLAST OFF -->
-  <div id="ct-blast" class="ct-panel" style="display:none">
-    <div class="level-pills">
-      <button class="level-pill active" onclick="ctbSetLevel(5)">from 5</button>
-      <button class="level-pill" onclick="ctbSetLevel(10)">from 10</button>
-      <button class="level-pill" onclick="ctbSetLevel(20)">from 20</button>
-    </div>
-    <div class="problem-card">
-      <div class="hint-text" id="ctb-hint">Count DOWN to launch the rocket! 👇</div>
-      <div class="ctb-row" id="ctb-row"></div>
-      <div id="ctb-pad"><div id="ctb-rocket">🚀</div></div>
-    </div>
-    <div class="m-feedback" id="ctb-feedback"></div>
-  </div>
-</div>
-
 <!-- AQUARIUM -->
 <div id="screen-aquarium" class="screen">
   <div class="aq-howto">Play any game to earn XP ⭐ — every 25 XP adds a fish to your tank! 🐠</div>
@@ -753,9 +752,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 <!-- BOTTOM NAV -->
 <div id="bottom-nav">
-  <button class="nav-tab active" onclick="switchMain('writing')">
-    <div class="nav-tab-icon">✏️</div>
-    <div class="nav-tab-label">Writing</div>
+  <button class="nav-tab active" onclick="switchMain('reading')">
+    <div class="nav-tab-icon">📖</div>
+    <div class="nav-tab-label">Reading</div>
     <div class="nav-tab-bar"></div>
   </button>
   <button class="nav-tab" onclick="switchMain('math')">
@@ -763,19 +762,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div class="nav-tab-label">Math</div>
     <div class="nav-tab-bar"></div>
   </button>
-  <button class="nav-tab" onclick="switchMain('counting')">
-    <div class="nav-tab-icon">💯</div>
-    <div class="nav-tab-label">123</div>
-    <div class="nav-tab-bar"></div>
-  </button>
-  <button class="nav-tab" onclick="switchMain('reading')">
-    <div class="nav-tab-icon">📖</div>
-    <div class="nav-tab-label">Reading</div>
-    <div class="nav-tab-bar"></div>
-  </button>
-  <button class="nav-tab" onclick="switchMain('flipit')">
-    <div class="nav-tab-icon">🪞</div>
-    <div class="nav-tab-label">Flip It</div>
+  <button class="nav-tab" onclick="switchMain('writing')">
+    <div class="nav-tab-icon">✏️</div>
+    <div class="nav-tab-label">Writing</div>
     <div class="nav-tab-bar"></div>
   </button>
   <button class="nav-tab" onclick="switchMain('aquarium')">
@@ -807,12 +796,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 <script>
 /* NAV */
 function switchMain(tab){
-  document.querySelectorAll('.nav-tab').forEach((b,i)=>b.classList.toggle('active',['writing','math','counting','reading','flipit','aquarium'][i]===tab));
+  document.querySelectorAll('.nav-tab').forEach((b,i)=>b.classList.toggle('active',['reading','math','writing','aquarium'][i]===tab));
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
-  if(tab==='writing'){setCanvasSize();drawGuideBackground();}
+  if(tab==='writing'){if(wFlipActive){setFlipCanvasSize();ftRender();}else{setCanvasSize();drawGuideBackground();}}
   if(tab==='aquarium'){renderAquarium();updateWordChips();}
-  if(tab==='flipit'){setFlipCanvasSize();ftRender();}
   if(tab!=='reading')wpStop();
 }
 function switchReadingSub(sub){
@@ -838,7 +826,7 @@ const STROKES={'A':[[[50,10],[20,90]],[[50,10],[80,90]],[[30,60],[70,60]]],'B':[
 });
 
 /* WRITING STATE */
-let wTab='upper',wChar='A',wStroke=0,wDrawing=false,wPath=[],wDone=[],wGuideAnim=null,wShowGuide=false;
+let wTab='upper',wChar='A',wStroke=0,wDrawing=false,wPath=[],wDone=[],wGuideAnim=null,wShowGuide=false,wFlipActive=false;
 const gCv=document.getElementById('guide-canvas'),dCv=document.getElementById('draw-canvas'),gCx=gCv.getContext('2d'),dCx=dCv.getContext('2d');
 function setCanvasSize(){const w=Math.min(460,window.innerWidth-24);gCv.width=dCv.width=w;gCv.height=dCv.height=w;gCv.style.width=dCv.style.width=w+'px';gCv.style.height=dCv.style.height=w+'px';document.getElementById('canvas-wrapper').style.height=w+'px';}
 function sc(pts){const s=gCv.width/100;return pts.map(([x,y])=>[x*s,y*s]);}
@@ -871,7 +859,14 @@ function selectChar(c){wChar=c;wStroke=0;wDone=[];wPath=[];wShowGuide=false;if(w
 function clearDrawing(){wStroke=0;wDone=[];wPath=[];dCx.clearRect(0,0,dCv.width,dCv.height);drawGuideBackground();buildStrokeDots();setWInstr('Try again! Trace stroke 1 💪');}
 function nextChar(){const ch=W_CHARS[wTab];selectChar(ch[(ch.indexOf(wChar)+1)%ch.length]);}
 function setWInstr(m){document.getElementById('w-instructions').textContent=m;}
-function switchSub(tab){wTab=tab;document.querySelectorAll('.sub-tab').forEach((b,i)=>b.classList.toggle('active',['upper','lower','numbers','teens'][i]===tab));selectChar(W_CHARS[tab][0]);}
+function switchSub(tab){
+  document.querySelectorAll('.sub-tab').forEach((b,i)=>b.classList.toggle('active',['upper','lower','numbers','teens','flip'][i]===tab));
+  wFlipActive=tab==='flip';
+  document.getElementById('writing-main').style.display=wFlipActive?'none':'block';
+  document.getElementById('writing-flip').style.display=wFlipActive?'block':'none';
+  if(wFlipActive){setFlipCanvasSize();ftRender();}
+  else{wTab=tab;selectChar(W_CHARS[tab][0]);}
+}
 
 /* ═══════════════════════════════════════════
    FLIP IT (letter reversals)
@@ -1082,10 +1077,12 @@ function toggleMode(){mFrogMode=!mFrogMode;document.getElementById('m-mode-btn')
 let mathMode='plus';
 function setMathMode(mode){
   mathMode=mode;
-  document.querySelectorAll('.math-mode-tab').forEach((b,i)=>b.classList.toggle('active',['plus','minus','bonds'][i]===mode));
+  document.querySelectorAll('.math-mode-tab').forEach((b,i)=>b.classList.toggle('active',['plus','minus','bonds','counting'][i]===mode));
   document.getElementById('math-plus').style.display=mode==='plus'?'block':'none';
   document.getElementById('math-minus').style.display=mode==='minus'?'block':'none';
   document.getElementById('math-bonds').style.display=mode==='bonds'?'block':'none';
+  document.getElementById('math-counting').style.display=mode==='counting'?'block':'none';
+  document.querySelector('#screen-math .stats-row').style.display=mode==='counting'?'none':'grid';
   if(mode==='plus')newQuestion();
   if(mode==='minus')newMinusQuestion();
   if(mode==='bonds')newBondsQuestion();
@@ -1251,8 +1248,7 @@ function toggleZh(){ctZh=!ctZh;gs.zhAudio=ctZh;gsSave();const b=document.getElem
 function switchCtSub(sub){ctSub=sub;document.querySelectorAll('.ct-sub-tab').forEach((b,i)=>b.classList.toggle('active',['next','chart','blast'][i]===sub));document.getElementById('ct-next').style.display=sub==='next'?'block':'none';document.getElementById('ct-chart').style.display=sub==='chart'?'block':'none';document.getElementById('ct-blast').style.display=sub==='blast'?'block':'none';}
 
 /* NEXT NUMBER */
-let ctnMax=30,ctnAns=0,ctnStreak=0,ctnAnswered=false;
-function ctnSetLevel(m){ctnMax=m;document.querySelectorAll('#ct-next .level-pill').forEach((b,i)=>b.classList.toggle('active',[30,60,100][i]===m));ctnNew();}
+let ctnMax=100,ctnAns=0,ctnStreak=0,ctnAnswered=false;
 function ctnRev(n){const s=String(n);if(s.length!==2||s[0]===s[1]||s[1]==='0')return null;return parseInt(s[1]+s[0]);}
 function ctnNew(){
   ctnAnswered=false;document.getElementById('ctn-feedback').textContent='';document.getElementById('ctn-caption').textContent='';
