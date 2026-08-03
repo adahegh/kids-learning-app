@@ -203,7 +203,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 #screen-wordpop { padding: 0 0 80px; max-width: 520px; margin: 0 auto; }
 #wp-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px 8px; }
 .wp-stat-pill { display: flex; align-items: center; gap: 5px; background: #fff; border: 1px solid #dde6f0; border-radius: 99px; padding: 5px 12px; font-size: 13px; font-weight: 700; color: #1a2a3a; }
-#wp-hearts { font-size: 22px; letter-spacing: 2px; }
 #wp-combo { font-size: 13px; font-weight: 800; color: #E05A00; background: #FFF3E0; border-radius: 99px; padding: 4px 12px; display: none; animation: combopop 0.4s ease-out; }
 @keyframes combopop { 0%{transform:scale(0.5)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
 #wp-arena { position: relative; width: 100%; height: calc(100svh - 300px); min-height: 320px; background: linear-gradient(180deg,#e8f4fd 0%,#cce8fa 100%); overflow: hidden; border-top: 1px solid #c8dff0; border-bottom: 1px solid #c8dff0; touch-action: none; }
@@ -664,7 +663,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   <!-- WORD POP -->
   <div id="reading-wordpop" class="reading-panel" style="display:none">
     <div id="wp-header">
-      <div id="wp-hearts">❤️❤️❤️</div>
+      <div class="wp-stat-pill">🫧 <span id="wp-pops">0</span>/10</div>
       <div id="wp-combo">🔥 COMBO x<span id="wp-combo-num">2</span></div>
       <div class="wp-stat-pill">⭐ <span id="wp-score">0</span></div>
     </div>
@@ -686,7 +685,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       </div>
       <div id="wp-gameover-screen">
         <div style="font-size:56px">🫧</div>
-        <h2>Game Over!</h2>
+        <h2>Great popping! 🎉</h2>
         <div style="display:flex;gap:24px">
           <div class="wp-go-stat"><div class="wp-go-stat-val" id="wp-final-score">0</div><div class="wp-go-stat-lbl">score</div></div>
           <div class="wp-go-stat"><div class="wp-go-stat-val" id="wp-final-best">0</div><div class="wp-go-stat-lbl">best</div></div>
@@ -1434,7 +1433,8 @@ function celebrate(){const cel=document.getElementById('celebration');document.g
 
 /* WORD POP */
 const WP_COLORS=['#378ADD','#1D9E75','#E05A00','#7B5EA7','#C0392B','#2471A3','#1A7A4A','#B7770D'];
-let wpWords=[], wpLevel='prek', wpRunning=false, wpScore=0, wpBest=0, wpHearts=3, wpCombo=0, wpPopped=0;
+let wpWords=[], wpLevel='prek', wpRunning=false, wpScore=0, wpBest=0, wpCombo=0, wpPopped=0;
+const WP_ROUND=10; // round ends after this many correct pops (matches the daily goal)
 let wpBubbles=[], wpSpawnTimer=null, wpSpeedTimer=null, wpCurrentTarget='', wpSpawnInterval=2200, wpFallDuration=5500;
 
 function wpSetLevel(lv){
@@ -1451,11 +1451,11 @@ function wpShuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.
 
 function wpStart(){
   wpWords=wpShuffle(wpBuildWordPool());
-  wpScore=0; wpHearts=3; wpCombo=0; wpPopped=0;
+  wpScore=0; wpCombo=0; wpPopped=0;
   wpSpawnInterval=2200; wpFallDuration=5500;
   wpRunning=true;
   document.getElementById('wp-score').textContent=0;
-  document.getElementById('wp-hearts').textContent='❤️❤️❤️';
+  document.getElementById('wp-pops').textContent=0;
   document.getElementById('wp-combo').style.display='none';
   document.getElementById('wp-start-screen').style.display='none';
   document.getElementById('wp-gameover-screen').style.display='none';
@@ -1491,7 +1491,7 @@ function wpPickTarget(){
   el.textContent=wpCurrentTarget;
   el.style.animation='none'; void el.offsetWidth; el.style.animation='';
   // Speak it
-  if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(ttsFix(wpCurrentTarget));u.rate=0.82;u.pitch=1.15;speechSynthesis.speak(u);}
+  if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(ttsFix(wpCurrentTarget));u.rate=0.82;u.pitch=1.15;u.lang='en-US';speechSynthesis.speak(u);}
 }
 
 function wpScheduleSpawn(){
@@ -1511,8 +1511,8 @@ function wpSpawnBubble(){
   const pool=wpBuildWordPool().filter(w=>w!==wpCurrentTarget);
   const word=showTarget?wpCurrentTarget:pool[Math.floor(Math.random()*pool.length)];
   const size=Math.min(Math.max(72+word.length*4,80),120);
-  const fontSize=size*0.28;
-  const x=size/2+Math.random()*(aW-size);
+  const fontSize=Math.min(size*0.28,(size-18)/(word.length*0.62));
+  const x=8+Math.random()*Math.max(1,aW-size-16);
   const color=WP_COLORS[Math.floor(Math.random()*WP_COLORS.length)];
   const el=document.createElement('div');
   el.className='wp-bubble';
@@ -1547,6 +1547,7 @@ function wpTapBubble(el,word,x,y){
     wpPopped++;
     wpCombo++;
     document.getElementById('wp-score').textContent=wpScore;
+    document.getElementById('wp-pops').textContent=wpPopped;
     showWpText('+'+( wpCombo>1?wpCombo:1),px,py,false);
     if(wpCombo>=3){document.getElementById('wp-combo').style.display='block';document.getElementById('wp-combo-num').textContent=wpCombo;}
     else document.getElementById('wp-combo').style.display='none';
@@ -1557,13 +1558,13 @@ function wpTapBubble(el,word,x,y){
     // Mark correct in reading too
     rCorrectCounts[word]=(rCorrectCounts[word]||0)+1;
     if(rCorrectCounts[word]>=3&&!rMastered.has(word)){rMastered.add(word);wordMastered(word);}
+    if(wpPopped>=WP_ROUND){setTimeout(wpGameOver,600);return;}
     setTimeout(()=>{wpPickTarget();},300);
   } else {
     el.classList.add('miss');
     wpCombo=0;
     document.getElementById('wp-combo').style.display='none';
     showWpText('✗',px,py,true);
-    wpLoseHeart();
   }
 }
 
@@ -1571,14 +1572,6 @@ function wpMissBubble(bubble){
   if(bubble.word!==wpCurrentTarget)return;
   wpCombo=0;
   document.getElementById('wp-combo').style.display='none';
-  wpLoseHeart();
-}
-
-function wpLoseHeart(){
-  wpHearts=Math.max(0,wpHearts-1);
-  const hearts=['','❤️','❤️❤️','❤️❤️❤️'][wpHearts]||'';
-  document.getElementById('wp-hearts').textContent=hearts||'💔';
-  if(wpHearts<=0)setTimeout(wpGameOver,500);
 }
 
 function showWpText(txt,x,y,wrong){
