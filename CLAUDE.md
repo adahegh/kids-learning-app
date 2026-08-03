@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-"Learn & Play" — a kids' learning app (writing, math, reading games with an aquarium reward system). Two self-contained HTML files, zero dependencies, no build step, no tests, no lint:
+"Splash & Learn" — a kids' learning app (writing, math, reading games with an aquarium reward system). Two self-contained HTML files, zero dependencies, no build step, no tests, no lint:
 - `index.html` — parent-facing landing page (what gets shared; explains the app, links to the game).
 - `play.html` — the app itself: all CSS in one `<style>` block, all JS in one `<script>` block. Tabs (nav order): Reading (Flashcards / Star Catcher — listen-only by design / Word Pop), Math (Plus / Minus — both with a count-objects vs. answer-only mode toggle / Number Bonds / 123 counting mode — Next Number, Hundred Chart, Blast Off backwards-counting, prefix `ct*`, English number audio via `ctSpeak()` on deliberate taps only), Writing (upper / lower / numbers / teens tracing, plus a Flip It sub-tab for letter-reversal practice: Trace It / Spot It / Sound Sort), Aquarium.
 
@@ -26,7 +26,7 @@ Target device is an iPad/touch screen (apple-mobile-web-app meta tags, touch + m
 
 **Per-game namespaces.** Globals/functions are prefixed by game, e.g.: `w*` (writing), `m*` (math), `r*` (reading flashcards), `wp*` (Word Pop), `sc*` (Star Catcher), `ft*`/`fs*`/`fso*` (Flip It), plus shared `gs*`/aquarium code. Keep new code in the owning prefix.
 
-**Shared gamification layer** (bottom of the script): games report progress only through two calls — `earnXP(amount)` and `tickDaily(game, amount)`. Every 25 XP (`XP_PER_FISH`) mints one fish via `addFish()`; the full-screen reward popup fires **only** when a new `FISH_ROSTER` species unlocks (thresholds are total-fish counts) — keep ordinary progress quiet. Daily-goal bars (`DAILY_TARGETS`), streaks, and milestone overlays hang off the same two calls. Persistent state lives in the `gs` object (`gsSave()`/`gsLoad()`); `gsSave()` also syncs the out-of-`gs` globals (`fishEarned`, `rMastered`, `rCorrectCounts`, `wpBest`) and `gsLoad()` rehydrates them — new persistent state must be wired into both.
+**Shared gamification layer** (bottom of the script): games report progress only through one call — `earnXP(amount)`. Every 25 XP (`XP_PER_FISH`) mints one fish via `addFish()`; the full-screen reward popup fires **only** when a new `FISH_ROSTER` species unlocks (thresholds are total-fish counts) — keep ordinary progress quiet. There is deliberately no streak or daily-goal system (removed 2026-08: the app is parent-guided, sessions happen when parents decide) — don't add one back. Persistent state lives in the `gs` object (`gsSave()`/`gsLoad()`); `gsSave()` also syncs the out-of-`gs` globals (`fishEarned`, `rMastered`, `rCorrectCounts`, `wpBest`) and `gsLoad()` rehydrates them — new persistent state must be wired into both.
 
 **Writing/tracing games.** Letter stroke data lives in `STROKES` (Flip It reuses it, adding mnemonics in `FLIP_ITEMS`/`FLIP_LIST`) as arrays of strokes, each an array of `[x,y]` points in a **100×100 coordinate space**, scaled to canvas size by `sc()`. Two stacked canvases: guide (below) and drawing (above). Stroke acceptance is intentionally lenient — `wScore()` blends direction (50%), endpoint proximity (35%), and length ratio (15%) with a 0.35 pass threshold; keep it forgiving, the user is a young child.
 
