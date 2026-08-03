@@ -153,9 +153,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .reading-sub-tab { padding: 8px 14px; border-radius: 99px; border: 1.5px solid #c8dff0; background: #fff; font-size: 14px; font-weight: 600; color: #667788; cursor: pointer; transition: all 0.15s; touch-action: manipulation; }
 .reading-sub-tab.active { background: #185FA5; border-color: #185FA5; color: #fff; }
 /* STAR CATCHER */
-.sc-mode-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
-.sc-mode-btn { padding: 8px 16px; border-radius: 14px; border: none; background: #eef0ff; color: #4b3f8f; font-size: 15px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
-.sc-mode-btn.active { background: #ff9f43; color: #fff; }
 .sc-stars { text-align: center; font-size: 24px; margin: 0 0 12px; min-height: 32px; letter-spacing: 2px; color: #5a5280; font-weight: 600; }
 .sc-prompt { text-align: center; font-size: 16px; margin: 8px 0; color: #5a5280; font-weight: 700; }
 .sc-target { text-align: center; font-size: 46px; font-weight: 800; margin: 4px 0; min-height: 56px; color: #1a2a3a; }
@@ -655,10 +652,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
   <!-- STAR CATCHER -->
   <div id="reading-starcatcher" class="reading-panel" style="display:none">
-    <div class="sc-mode-row">
-      <button class="sc-mode-btn active" onclick="scSetMode('listen')">🔊 Listen &amp; Tap</button>
-      <button class="sc-mode-btn" onclick="scSetMode('match')">👀 Match the Word</button>
-    </div>
     <div class="level-pills">
       <button class="level-pill active" onclick="scSetLevel('prek')">Pre-K</button>
       <button class="level-pill" onclick="scSetLevel('k')">Kindergarten</button>
@@ -666,7 +659,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <button class="level-pill" onclick="scSetLevel('all')">All words</button>
     </div>
     <div class="sc-stars" id="sc-stars">Catch your first star! ✨</div>
-    <div class="sc-prompt" id="sc-prompt">Tap the speaker, then tap the word!</div>
+    <div class="sc-prompt" id="sc-prompt">Listen, then tap the word you hear 👂</div>
     <div class="sc-target" id="sc-target">🔊</div>
     <button class="sc-speak-btn" id="sc-speak-btn" onclick="scSpeak(scAnswer)">🔊 Say it again</button>
     <div class="sc-grid" id="sc-grid"></div>
@@ -1394,7 +1387,7 @@ function markWord(knew){if(!rDeck.length)return;const word=rDeck[rIdx];if(knew){
 function updateRProgress(){const total=rDeck.length,done=rDeck.filter(w=>rMastered.has(w)).length;document.getElementById('r-prog-fill').style.width=(total?Math.round(done/total*100):0)+'%';document.getElementById('r-prog-label').textContent=done+' / '+total+' known';}
 
 /* ─── STAR CATCHER ─── */
-let scMode='listen', scLevel='prek', scAnswer='', scAnswered=false, scStarCount=0;
+let scLevel='prek', scAnswer='', scAnswered=false, scStarCount=0;
 function scWordPool(){return R_WORDS[scLevel]?[...R_WORDS[scLevel]]:rAllWords();}
 function scSetLevel(lv){scLevel=lv;document.querySelectorAll('#reading-starcatcher .level-pill').forEach((b,i)=>b.classList.toggle('active',['prek','k','g1','all'][i]===lv));scNewRound();}
 function scShuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -1405,16 +1398,13 @@ const PRONOUNCE={'the':'thuh','a':'uh'};
 function ttsFix(t){let s=String(t);for(const w in PRONOUNCE)s=s.replace(new RegExp('\\b'+w+'\\b','gi'),PRONOUNCE[w]);return s;}
 function scSpeak(text){if(!('speechSynthesis' in window)||!text)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(ttsFix(text));u.rate=0.8;u.pitch=1.1;u.lang='en-US';speechSynthesis.speak(u);}
 function scRenderStars(){const el=document.getElementById('sc-stars');const max=12;let s='';for(let i=0;i<Math.min(scStarCount,max);i++)s+='⭐';if(scStarCount>max)s+=' +'+(scStarCount-max);el.textContent=s||'Catch your first star! ✨';}
-function scSetMode(mode){scMode=mode;document.querySelectorAll('.sc-mode-btn').forEach((b,i)=>b.classList.toggle('active',['listen','match'][i]===mode));scNewRound();}
 function scNewRound(){
   scAnswered=false;
   document.getElementById('sc-feedback').textContent='';
   document.getElementById('sc-next-btn').classList.add('hidden');
   const choices=scShuffle(scWordPool()).slice(0,4);
   scAnswer=choices[Math.random()*choices.length|0];
-  const promptEl=document.getElementById('sc-prompt'),targetEl=document.getElementById('sc-target');
-  if(scMode==='listen'){promptEl.textContent='Listen, then tap the word you hear 👂';targetEl.textContent='🔊';setTimeout(()=>scSpeak(scAnswer),350);}
-  else{promptEl.textContent='Find this word below 👇';targetEl.textContent=scAnswer;setTimeout(()=>scSpeak(scAnswer),350);}
+  setTimeout(()=>scSpeak(scAnswer),350);
   const grid=document.getElementById('sc-grid');grid.innerHTML='';
   choices.forEach((w,i)=>{const b=document.createElement('button');b.className='sc-choice sc-c'+i;b.textContent=w;b.onclick=(e)=>scChoose(w,b,e);grid.appendChild(b);});
 }
