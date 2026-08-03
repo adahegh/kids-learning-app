@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Learn & Play" — a kids' learning app (writing, math, reading games with an aquarium reward system). Two self-contained HTML files, zero dependencies, no build step, no tests, no lint:
 - `index.html` — parent-facing landing page (what gets shared; explains the app, links to the game).
-- `play.html` — the app itself: all CSS in one `<style>` block, all JS in one `<script>` block. Tabs (nav order): Reading (Flashcards / Star Catcher / Word Pop), Math (Plus / Minus / Number Bonds / 123 counting mode — Next Number, Hundred Chart, Blast Off backwards-counting, prefix `ct*`, with bilingual English+Mandarin number audio via `ctSpeak()`/`numToZh()` — toggle persisted as `gs.zhAudio`), Writing (upper / lower / numbers / teens tracing, plus a Flip It sub-tab for letter-reversal practice: Trace It / Spot It / Sound Sort), Aquarium.
+- `play.html` — the app itself: all CSS in one `<style>` block, all JS in one `<script>` block. Tabs (nav order): Reading (Flashcards / Star Catcher — listen-only by design / Word Pop), Math (Plus / Minus — both with a count-objects vs. answer-only mode toggle / Number Bonds / 123 counting mode — Next Number, Hundred Chart, Blast Off backwards-counting, prefix `ct*`, English number audio via `ctSpeak()` on deliberate taps only), Writing (upper / lower / numbers / teens tracing, plus a Flip It sub-tab for letter-reversal practice: Trace It / Spot It / Sound Sort), Aquarium.
 
 Deployed via **GitHub Pages** from `main` (repo `adahegh/kids-learning-app`) — pushing to `main` publishes. Both pages carry a GoatCounter analytics script tag before `</body>` (site code `adahejj`; cookie-free pageview counts; ignores localhost). All game state persists to the localStorage key `learnplay_gs`.
 
@@ -34,5 +34,6 @@ Target device is an iPad/touch screen (apple-mobile-web-app meta tags, touch + m
 
 ## Conventions
 
-- Kid-facing UX: large touch targets, emoji, cheerful feedback messages, no reading required to navigate. Wrong answers reset streaks but always allow retry.
+- Kid-facing UX: large touch targets, emoji, cheerful feedback messages, no reading required to navigate. Wrong answers reset streaks but always allow retry — no punitive fail states (Word Pop rounds end after `WP_ROUND` correct pops, not lost lives).
+- The app is parent-guided: keep on-screen instructional/helper text to a minimum (no hint lines under equations) and never auto-play speech — audio only on a deliberate tap.
 - Code style is dense single-line functions with terse names; match it rather than reformatting.
