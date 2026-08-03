@@ -62,7 +62,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .m-progress-bar { height: 7px; background: #dde6f0; border-radius: 99px; overflow: hidden; margin-bottom: 12px; }
 .m-progress-fill { height: 100%; background: #378ADD; border-radius: 99px; transition: width 0.4s ease; }
 .problem-card { background: #fff; border: 1px solid #dde6f0; border-radius: 16px; padding: 1.25rem 1rem 1rem; margin-bottom: 10px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-.locked-label { font-size: 14px; color: #185FA5; font-weight: 600; margin-bottom: 10px; }
 .equation { font-size: 52px; font-weight: 700; color: #1a2a3a; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px; }
 .big-num-box { background: #deeeff; color: #0C447C; border-radius: 12px; padding: 2px 20px; border: 2px solid #85B7EB; }
 .hint-text { font-size: 14px; color: #778899; min-height: 20px; margin-bottom: 10px; font-weight: 500; }
@@ -482,13 +481,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   <!-- PLUS MODE -->
   <div id="math-plus" class="math-mode-panel">
     <div class="problem-card">
-      <div class="locked-label">🔒 Start at <strong id="m-big-label">5</strong> — already counted!</div>
       <div class="equation">
         <span class="big-num-box" id="m-eq-big">5</span>
         <span>+</span><span id="m-eq-add">4</span>
         <span>=</span><span id="m-eq-ans" style="color:#b0c4d8">?</span>
       </div>
-      <div class="hint-text" id="m-hint">Tap each animal to count on!</div>
       <div class="frogs-row" id="m-frogs"></div>
     </div>
     <div class="m-feedback" id="m-feedback"></div>
@@ -507,13 +504,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <span>−</span><span id="mn-take">2</span>
         <span>=</span><span id="mn-ans" style="color:#b0c4d8">?</span>
       </div>
-      <div class="hint-text" id="mn-hint">Tap the apples to make them fall! 🍎</div>
       <div class="minus-tree" id="mn-objects"></div>
     </div>
     <div class="m-feedback" id="mn-feedback"></div>
     <div class="answer-row" id="mn-answer-row"></div>
     <div class="m-btn-row">
       <button class="m-btn" onclick="newMinusQuestion()">🔄 New question</button>
+      <button class="m-btn" id="mn-mode-btn" onclick="toggleMinusMode()">🍎 Count mode</button>
     </div>
   </div>
 
@@ -1058,9 +1055,9 @@ const ANIMALS=['🐸','🦋','🐝','🐢','🐠','🐧','🦊','🐨'];
 const CHEERS=['⭐ Amazing!','🎉 You got it!','🌟 Superstar!','🏆 Perfect!','✨ Brilliant!','🎊 Wow!'];
 let mScore=0,mStreak=0,mQnum=0,mLvl=0,mBig=5,mAdd=4,mAns=9,mTapped=0,mAnswered=false,mFrogMode=true;
 function mRand(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
-function newQuestion(){const lv=M_LEVELS[Math.min(mLvl,M_LEVELS.length-1)];mBig=mRand(lv.bigMin,lv.bigMax);mAdd=mRand(lv.addMin,lv.addMax);mAns=mBig+mAdd;mTapped=0;mAnswered=false;mQnum++;document.getElementById('m-eq-big').textContent=mBig;document.getElementById('m-eq-add').textContent=mAdd;document.getElementById('m-eq-ans').textContent='?';document.getElementById('m-eq-ans').style.color='#b0c4d8';document.getElementById('m-big-label').textContent=mBig;document.getElementById('m-qnum').textContent=mQnum;document.getElementById('m-feedback').textContent='';document.getElementById('m-hint').textContent=mFrogMode?`Tap each ${ANIMALS[mLvl%ANIMALS.length]} to count on from ${mBig}!`:`How much is ${mBig} + ${mAdd}?`;buildFrogs();buildAnsBtns();}
+function newQuestion(){const lv=M_LEVELS[Math.min(mLvl,M_LEVELS.length-1)];mBig=mRand(lv.bigMin,lv.bigMax);mAdd=mRand(lv.addMin,lv.addMax);mAns=mBig+mAdd;mTapped=0;mAnswered=false;mQnum++;document.getElementById('m-eq-big').textContent=mBig;document.getElementById('m-eq-add').textContent=mAdd;document.getElementById('m-eq-ans').textContent='?';document.getElementById('m-eq-ans').style.color='#b0c4d8';document.getElementById('m-qnum').textContent=mQnum;document.getElementById('m-feedback').textContent='';buildFrogs();buildAnsBtns();}
 function buildFrogs(){const row=document.getElementById('m-frogs');row.innerHTML='';row.style.display=mFrogMode?'flex':'none';if(!mFrogMode)return;const ani=ANIMALS[mLvl%ANIMALS.length];for(let i=0;i<mAdd;i++){const f=document.createElement('div');f.className='frog';f.textContent=ani;f.dataset.idx=i;f.onclick=()=>tapFrog(f,i);row.appendChild(f);}}
-function tapFrog(el,idx){if(mAnswered)return;if(parseInt(el.dataset.idx)!==mTapped){document.getElementById('m-hint').textContent='Tap them in order! 👈';return;}el.classList.add('tapped');el.onclick=null;mTapped++;const cur=mBig+mTapped;if(mTapped===mAdd){document.getElementById('m-hint').textContent=`You counted to ${cur}! Pick the answer 👇`;document.getElementById('m-eq-ans').textContent=cur;document.getElementById('m-eq-ans').style.color='#1a2a3a';hlAns(cur);}else document.getElementById('m-hint').textContent=`Keep going… ${mAdd-mTapped} more!`;}
+function tapFrog(el,idx){if(mAnswered)return;if(parseInt(el.dataset.idx)!==mTapped)return;el.classList.add('tapped');el.onclick=null;mTapped++;const cur=mBig+mTapped;if(mTapped===mAdd){document.getElementById('m-eq-ans').textContent=cur;document.getElementById('m-eq-ans').style.color='#1a2a3a';hlAns(cur);}}
 function buildAnsBtns(){const row=document.getElementById('m-answer-row');row.innerHTML='';const opts=new Set([mAns]);while(opts.size<4){const v=mAns+mRand(-3,3);if(v>0&&v!==mAns)opts.add(v);}[...opts].sort((a,b)=>a-b).forEach(v=>{const b=document.createElement('button');b.className='ans-btn';b.textContent=v;b.onclick=()=>pickAns(b,v);row.appendChild(b);});}
 function hlAns(val){document.querySelectorAll('.ans-btn').forEach(b=>{if(parseInt(b.textContent)===val){b.style.border='2px solid #378ADD';b.style.background='#deeeff';}});}
 function pickAns(btn,val){if(mAnswered)return;mAnswered=true;if(val===mAns){btn.classList.add('correct');mScore++;mStreak++;if(mStreak%3===0&&mLvl<M_LEVELS.length-1)mLvl++;document.getElementById('m-score').textContent=mScore;document.getElementById('m-streak').textContent=mStreak;document.getElementById('m-feedback').textContent=CHEERS[Math.floor(Math.random()*CHEERS.length)];const xp=3+(mStreak>1?2:0);earnXP(xp);tickDaily('math',1);setTimeout(newQuestion,1500);}else{btn.classList.add('wrong');mStreak=0;document.getElementById('m-streak').textContent=0;document.getElementById('m-feedback').textContent='Not quite — try again! 💪';mAnswered=false;setTimeout(()=>btn.classList.remove('wrong'),600);}}
@@ -1082,7 +1079,7 @@ function setMathMode(mode){
 }
 
 /* ─── MINUS MODE (take-away) ─── */
-let mnStart=5,mnTake=2,mnAns=3,mnFallen=0,mnAnswered=false;
+let mnStart=5,mnTake=2,mnAns=3,mnFallen=0,mnAnswered=false,mnObjMode=true;
 const MINUS_OBJECTS=['🍎','🎈','⭐','🍪','🐟','🌸','🍊','🚗'];
 let mnObjEmoji='🍎';
 function newMinusQuestion(){
@@ -1096,30 +1093,23 @@ function newMinusQuestion(){
   document.getElementById('mn-ans').textContent='?';
   document.getElementById('mn-ans').style.color='#b0c4d8';
   document.getElementById('mn-feedback').textContent='';
-  document.getElementById('mn-hint').textContent=`Tap ${mnTake} to cross them out! ${mnObjEmoji}`;
-  const box=document.getElementById('mn-objects');box.innerHTML='';
-  for(let i=0;i<mnStart;i++){
-    const o=document.createElement('div');o.className='minus-obj';o.textContent=mnObjEmoji;
-    o.onclick=()=>tapMinusObj(o);box.appendChild(o);
-  }
-  document.getElementById('mn-answer-row').innerHTML='';
+  const box=document.getElementById('mn-objects');box.innerHTML='';box.style.display=mnObjMode?'flex':'none';
+  if(mnObjMode){
+    for(let i=0;i<mnStart;i++){
+      const o=document.createElement('div');o.className='minus-obj';o.textContent=mnObjEmoji;
+      o.onclick=()=>tapMinusObj(o);box.appendChild(o);
+    }
+    document.getElementById('mn-answer-row').innerHTML='';
+  } else buildMinusAnsBtns();
 }
+function toggleMinusMode(){mnObjMode=!mnObjMode;document.getElementById('mn-mode-btn').textContent=mnObjMode?'🍎 Count mode':'🔢 Number mode';newMinusQuestion();}
 function tapMinusObj(el){
   if(mnAnswered||el.classList.contains('falling')||el.classList.contains('gone'))return;
-  if(mnFallen>=mnTake){document.getElementById('mn-hint').textContent=`That's enough! Only take away ${mnTake}. Now count what's left 👇`;return;}
+  if(mnFallen>=mnTake)return;
   el.classList.add('falling');
   mnFallen++;
   setTimeout(()=>{el.classList.add('gone');},650);
-  if(mnFallen===mnTake){
-    setTimeout(()=>{
-      document.getElementById('mn-hint').textContent=`How many are left? Count them! 👇`;
-      document.getElementById('mn-ans').textContent=mnAns;
-      document.getElementById('mn-ans').style.color='#1a2a3a';
-      buildMinusAnsBtns();
-    },750);
-  } else {
-    document.getElementById('mn-hint').textContent=`Take away ${mnTake-mnFallen} more!`;
-  }
+  if(mnFallen===mnTake)setTimeout(buildMinusAnsBtns,750);
 }
 function buildMinusAnsBtns(){
   const row=document.getElementById('mn-answer-row');row.innerHTML='';
@@ -1131,6 +1121,8 @@ function pickMinusAns(btn,val){
   if(mnAnswered)return;mnAnswered=true;
   if(val===mnAns){
     btn.classList.add('correct');mScore++;mStreak++;
+    document.getElementById('mn-ans').textContent=mnAns;
+    document.getElementById('mn-ans').style.color='#1a2a3a';
     document.getElementById('m-score').textContent=mScore;
     document.getElementById('m-streak').textContent=mStreak;
     document.getElementById('mn-feedback').textContent=CHEERS[Math.floor(Math.random()*CHEERS.length)];
