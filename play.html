@@ -164,6 +164,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .sc-choice.right { animation: scpop .4s ease; }
 @keyframes scpop { 0%{transform:scale(1)} 40%{transform:scale(1.15)} 100%{transform:scale(1)} }
 .sc-feedback { text-align: center; font-size: 22px; min-height: 32px; margin-top: 12px; font-weight: 700; color: #1a2a3a; }
+
+/* SPELL IT */
+.sp-pic { text-align: center; font-size: 78px; line-height: 1.15; margin: 4px 0 0; }
+.sp-word-row { display: flex; gap: 8px; justify-content: center; margin: 12px 0 4px; }
+.sp-tile { min-width: 60px; height: 64px; padding: 0 8px; border-radius: 14px; background: #f0f4f8; border: 1.5px solid #c8d8e8; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: #1a2a3a; text-transform: lowercase; }
+.sp-tile.blank { background: #fff; border: 2px dashed #378ADD; color: #b0c4d8; }
+.sp-tile.solved { background: #EAF3DE; border-color: #639922; color: #27500A; animation: cbpop 0.4s; }
+.sp-vowels { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+.sp-vowel-btn { width: 62px; padding: 10px 0 8px; border-radius: 18px; border: 2px solid #c8dff0; background: #fff; cursor: pointer; touch-action: manipulation; display: flex; flex-direction: column; align-items: center; gap: 2px; box-shadow: 0 4px 0 rgba(0,0,0,0.08); transition: transform 0.08s; }
+.sp-vowel-btn:active { transform: scale(0.95); }
+.sp-vowel-letter { font-size: 26px; font-weight: 800; color: #185FA5; line-height: 1; }
+.sp-vowel-anchor { font-size: 22px; line-height: 1; }
+.sp-vowel-btn.wrong { background: #FCEBEB; border-color: #E24B4A; animation: shake 0.3s; }
+.sp-vowel-btn.right { background: #EAF3DE; border-color: #639922; animation: cbpop 0.4s; }
 .sc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; gap: 10px; }
 .sc-next-btn { background: #3ddc84; color: #fff; padding: 11px 22px; border-radius: 16px; font-size: 17px; font-weight: 700; border: none; box-shadow: 0 5px 0 #2cb46a; cursor: pointer; touch-action: manipulation; }
 .sc-next-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 #2cb46a; }
@@ -554,6 +568,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <button class="reading-sub-tab active" onclick="switchReadingSub('flashcards')">📇 Flashcards</button>
     <button class="reading-sub-tab" onclick="switchReadingSub('starcatcher')">⭐ Star Catcher</button>
     <button class="reading-sub-tab" onclick="switchReadingSub('wordpop')">🫧 Word Pop</button>
+    <button class="reading-sub-tab" onclick="switchReadingSub('spellit')">🔤 Spell It</button>
   </div>
 
   <!-- FLASHCARDS -->
@@ -645,6 +660,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <button class="wp-btn" onclick="wpStop()">⏹ Stop</button>
     </div>
   </div>
+
+  <!-- SPELL IT -->
+  <div id="reading-spellit" class="reading-panel" style="display:none">
+    <div class="sc-prompt">Which sound is in the middle? 👂</div>
+    <div class="sp-pic" id="sp-pic">🐱</div>
+    <button class="sc-speak-btn" onclick="spSay()">🔊 Say it again</button>
+    <div class="sp-word-row" id="sp-word"></div>
+    <div class="sp-vowels" id="sp-vowels"></div>
+    <div class="sc-feedback" id="sp-feedback"></div>
+  </div>
 </div>
 
 <!-- AQUARIUM -->
@@ -718,12 +743,14 @@ function switchMain(tab){
   if(tab!=='reading')wpStop();
 }
 function switchReadingSub(sub){
-  document.querySelectorAll('.reading-sub-tab').forEach((b,i)=>b.classList.toggle('active',['flashcards','starcatcher','wordpop'][i]===sub));
+  document.querySelectorAll('.reading-sub-tab').forEach((b,i)=>b.classList.toggle('active',['flashcards','starcatcher','wordpop','spellit'][i]===sub));
   document.getElementById('reading-flashcards').style.display=sub==='flashcards'?'block':'none';
   document.getElementById('reading-starcatcher').style.display=sub==='starcatcher'?'block':'none';
   document.getElementById('reading-wordpop').style.display=sub==='wordpop'?'block':'none';
+  document.getElementById('reading-spellit').style.display=sub==='spellit'?'block':'none';
   if(sub!=='wordpop')wpStop();
   if(sub==='starcatcher'&&!scAnswer)scNewRound();
+  if(sub==='spellit')spNew();
 }
 
 /* WRITING DATA */
@@ -1336,6 +1363,46 @@ function scChoose(word,btn,e){
 }
 function scBurst(x,y){const emojis=['⭐','🌟','✨','🎉','💫'];for(let i=0;i<5;i++){const b=document.createElement('div');b.className='star';b.style.position='fixed';b.textContent=emojis[i%emojis.length];b.style.left=(x-20+(Math.random()*40-20))+'px';b.style.top=(y-10)+'px';b.style.zIndex=199;document.body.appendChild(b);setTimeout(()=>b.remove(),1300);}}
 function scReset(){scStarCount=0;scRenderStars();scNewRound();}
+
+/* ─── SPELL IT (middle-vowel CVC spelling) ─── */
+const SP_ANCHORS={a:{emoji:'🍎',word:'apple'},e:{emoji:'🥚',word:'egg'},i:{emoji:'🐜',word:'insect'},o:{emoji:'🐙',word:'octopus'},u:{emoji:'☂️',word:'umbrella'}};
+const SP_WORDS=[
+  {w:'cat',e:'🐱'},{w:'hat',e:'🎩'},{w:'bat',e:'🦇'},{w:'rat',e:'🐀'},{w:'van',e:'🚐'},{w:'bag',e:'👜'},{w:'map',e:'🗺️'},
+  {w:'bed',e:'🛏️'},{w:'pen',e:'🖊️'},{w:'hen',e:'🐔'},{w:'net',e:'🥅'},{w:'leg',e:'🦵'},{w:'web',e:'🕸️'},{w:'jet',e:'✈️'},{w:'ten',e:'🔟'},
+  {w:'pig',e:'🐷'},{w:'pin',e:'📌'},{w:'lip',e:'👄'},{w:'six',e:'6️⃣'},{w:'zip',e:'🤐'},{w:'kid',e:'🧒'},
+  {w:'dog',e:'🐶'},{w:'fox',e:'🦊'},{w:'box',e:'📦'},{w:'log',e:'🪵'},{w:'mop',e:'🧹'},{w:'pot',e:'🍲'},{w:'hot',e:'🔥'},
+  {w:'sun',e:'☀️'},{w:'bug',e:'🐛'},{w:'cup',e:'🥤'},{w:'bus',e:'🚌'},{w:'nut',e:'🥜'},{w:'tub',e:'🛁'},{w:'hug',e:'🤗'},{w:'run',e:'🏃'},
+];
+let spWord=null,spAnswered=false,spLast='',spMiss={a:0,e:0,i:0,o:0,u:0};
+// No ttsFix here: it respells standalone "a"/"the", which would mangle "A is for apple"
+function spSpeak(text,rate){if(!('speechSynthesis' in window)||!text)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=rate||0.8;u.pitch=1.1;u.lang='en-US';speechSynthesis.speak(u);}
+function spSay(){if(spWord)spSpeak(spWord.w,0.7);}
+// Weighted pick: vowels the child has missed this session come up more often
+function spPickWord(){const pool=SP_WORDS.filter(x=>x.w!==spLast);const wts=pool.map(x=>1+2*spMiss[x.w[1]]);let t=Math.random()*wts.reduce((a,b)=>a+b,0);for(let i=0;i<pool.length;i++){t-=wts[i];if(t<=0)return pool[i];}return pool[pool.length-1];}
+function spNew(){
+  spWord=spPickWord();spLast=spWord.w;spAnswered=false;
+  document.getElementById('sp-pic').textContent=spWord.e;
+  document.getElementById('sp-feedback').textContent='';
+  const row=document.getElementById('sp-word');row.innerHTML='';
+  spWord.w.split('').forEach((ch,i)=>{const t=document.createElement('div');t.className='sp-tile'+(i===1?' blank':'');t.textContent=i===1?'?':ch;if(i===1)t.id='sp-blank';row.appendChild(t);});
+  const vr=document.getElementById('sp-vowels');vr.innerHTML='';
+  ['a','e','i','o','u'].forEach(v=>{const b=document.createElement('button');b.className='sp-vowel-btn';b.innerHTML='<span class="sp-vowel-letter">'+v.toUpperCase()+'</span><span class="sp-vowel-anchor">'+SP_ANCHORS[v].emoji+'</span>';b.onclick=()=>spChoose(v,b);vr.appendChild(b);});
+  setTimeout(()=>spSpeak(spWord.w,0.7),350);
+}
+function spChoose(v,btn){
+  if(spAnswered)return;
+  if(v===spWord.w[1]){
+    spAnswered=true;btn.classList.add('right');
+    const bl=document.getElementById('sp-blank');bl.textContent=v;bl.classList.remove('blank');bl.classList.add('solved');
+    document.getElementById('sp-feedback').textContent=CHEERS[Math.floor(Math.random()*CHEERS.length)];
+    spSpeak(spWord.w);earnXP(4);
+    setTimeout(spNew,1600);
+  }else{
+    spMiss[spWord.w[1]]++;
+    btn.classList.add('wrong');setTimeout(()=>btn.classList.remove('wrong'),700);
+    spSpeak(v.toUpperCase()+' is for '+SP_ANCHORS[v].word+'. Listen: '+spWord.w,0.75);
+  }
+}
 
 /* FISH / AQUARIUM */
 // A mastered word no longer mints its own fish — fish come only from XP (all games).

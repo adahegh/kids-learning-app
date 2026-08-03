@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Splash & Learn" — a kids' learning app (writing, math, reading games with an aquarium reward system). Two self-contained HTML files, zero dependencies, no build step, no tests, no lint:
 - `index.html` — parent-facing landing page (what gets shared; explains the app, links to the game).
-- `play.html` — the app itself: all CSS in one `<style>` block, all JS in one `<script>` block. Tabs (nav order): Reading (Flashcards / Star Catcher — listen-only by design / Word Pop), Math (Plus / Minus — both with a count-objects vs. answer-only mode toggle / Number Bonds / 123 counting mode — Next Number, Hundred Chart, Blast Off backwards-counting, prefix `ct*`, English number audio via `ctSpeak()` on deliberate taps only), Writing (upper / lower / numbers / teens tracing, plus a Flip It sub-tab for letter-reversal practice: Trace It / Spot It / Sound Sort), Aquarium.
+- `play.html` — the app itself: all CSS in one `<style>` block, all JS in one `<script>` block. Tabs (nav order): Reading (Flashcards / Star Catcher — listen-only by design / Word Pop / Spell It — CVC middle-vowel phonics with per-vowel anchor emoji, prefix `sp*`, session-only adaptive bias toward missed vowels), Math (Plus / Minus — both with a count-objects vs. answer-only mode toggle / Number Bonds / 123 counting mode — Next Number, Hundred Chart, Blast Off backwards-counting, prefix `ct*`, English number audio via `ctSpeak()` on deliberate taps only), Writing (upper / lower / numbers / teens tracing, plus a Flip It sub-tab for letter-reversal practice: Trace It / Spot It / Sound Sort), Aquarium.
 
 Deployed via **GitHub Pages** from `main` (repo `adahegh/kids-learning-app`) — pushing to `main` publishes. Both pages carry a GoatCounter analytics script tag before `</body>` (site code `adahejj`; cookie-free pageview counts; ignores localhost). All game state persists to the localStorage key `learnplay_gs`.
 
@@ -24,7 +24,7 @@ Target device is an iPad/touch screen (apple-mobile-web-app meta tags, touch + m
 
 **Screens & navigation.** Each game is a `<div class="screen" id="screen-*">`; `switchMain(tab)` toggles `.active` and runs per-screen setup (canvas sizing, render). Bottom nav tabs call it.
 
-**Per-game namespaces.** Globals/functions are prefixed by game, e.g.: `w*` (writing), `m*` (math), `r*` (reading flashcards), `wp*` (Word Pop), `sc*` (Star Catcher), `ft*`/`fs*`/`fso*` (Flip It), plus shared `gs*`/aquarium code. Keep new code in the owning prefix.
+**Per-game namespaces.** Globals/functions are prefixed by game, e.g.: `w*` (writing), `m*` (math), `r*` (reading flashcards), `wp*` (Word Pop), `sc*` (Star Catcher), `sp*` (Spell It), `ft*`/`fs*`/`fso*` (Flip It), plus shared `gs*`/aquarium code. Keep new code in the owning prefix.
 
 **Shared gamification layer** (bottom of the script): games report progress only through one call — `earnXP(amount)`. Every 25 XP (`XP_PER_FISH`) mints one fish via `addFish()`; the full-screen reward popup fires **only** when a new `FISH_ROSTER` species unlocks (thresholds are total-fish counts) — keep ordinary progress quiet. There is deliberately no streak or daily-goal system (removed 2026-08: the app is parent-guided, sessions happen when parents decide) — don't add one back. Persistent state lives in the `gs` object (`gsSave()`/`gsLoad()`); `gsSave()` also syncs the out-of-`gs` globals (`fishEarned`, `rMastered`, `rCorrectCounts`, `wpBest`) and `gsLoad()` rehydrates them — new persistent state must be wired into both.
 
