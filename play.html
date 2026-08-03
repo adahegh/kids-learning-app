@@ -304,14 +304,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 #ct-sub-tabs { display: flex; gap: 6px; justify-content: center; margin-bottom: 10px; flex-wrap: wrap; }
 .ct-sub-tab { padding: 8px 14px; border-radius: 99px; border: 1.5px solid #c8dff0; background: #fff; font-size: 14px; font-weight: 600; color: #667788; cursor: pointer; transition: all 0.15s; touch-action: manipulation; }
 .ct-sub-tab.active { background: #185FA5; border-color: #185FA5; color: #fff; }
-#ct-zh-row { display: flex; justify-content: center; margin-bottom: 12px; }
-#ct-zh-btn { padding: 6px 18px; border-radius: 99px; border: 1.5px solid #E05A00; background: #fff; color: #E05A00; font-size: 13px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
-#ct-zh-btn.on { background: #E05A00; color: #fff; }
 .ctn-seq { display: flex; gap: 10px; justify-content: center; align-items: center; margin: 14px 0; flex-wrap: wrap; }
 .ctn-chip { min-width: 62px; height: 62px; padding: 0 8px; border-radius: 14px; background: #f0f4f8; border: 1.5px solid #c8d8e8; display: flex; align-items: center; justify-content: center; font-size: 27px; font-weight: 700; color: #1a2a3a; cursor: pointer; touch-action: manipulation; }
 .ctn-chip.blank { background: #fff; border: 2px dashed #378ADD; color: #b0c4d8; }
 .ctn-chip.solved { background: #EAF3DE; border-color: #639922; color: #27500A; animation: cbpop 0.4s; }
-.ct-caption { text-align: center; font-size: 15px; font-weight: 700; color: #7B5EA7; min-height: 24px; margin: 2px 0 4px; }
 .cth-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; margin: 10px 0; }
 .cth-cell { aspect-ratio: 1; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; cursor: pointer; touch-action: manipulation; border: 1px solid #d5e2ee; color: #b8c9d9; background: #fff; user-select: none; -webkit-user-select: none; }
 .cth-cell.tint { background: #f2f7fc; }
@@ -566,14 +562,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <button class="ct-sub-tab" onclick="switchCtSub('chart')">💯 Hundred Chart</button>
     <button class="ct-sub-tab" onclick="switchCtSub('blast')">🚀 Blast Off</button>
   </div>
-  <div id="ct-zh-row"><button id="ct-zh-btn" class="on" onclick="toggleZh()">🔊 中文 on</button></div>
 
   <!-- NEXT NUMBER -->
   <div id="ct-next" class="ct-panel">
     <div class="problem-card">
       <div class="hint-text" id="ctn-hint">What comes next? Tap the numbers to hear them!</div>
       <div class="ctn-seq" id="ctn-seq"></div>
-      <div class="ct-caption" id="ctn-caption"></div>
     </div>
     <div class="m-feedback" id="ctn-feedback"></div>
     <div class="answer-row" id="ctn-answers"></div>
@@ -1221,29 +1215,22 @@ function bondsMoveTo(side){
 
 /* READING DATA */
 /* ─── COUNTING (123) ─── */
-const ZH_DIGITS=['零','一','二','三','四','五','六','七','八','九','十'];
-const EN_DIGITS=['','one','two','three','four','five','six','seven','eight','nine'];
-function numToZh(n){if(n<=10)return ZH_DIGITS[n];if(n<20)return '十'+ZH_DIGITS[n-10];if(n===100)return '一百';const t=Math.floor(n/10),o=n%10;return ZH_DIGITS[t]+'十'+(o?ZH_DIGITS[o]:'');}
-// Structure caption — makes place value explicit the way Mandarin does ("15 = ten-five", "51 = five-ten-one")
-function ctCaption(n){if(n>=11&&n<=19)return n+' = '+numToZh(n)+' — "ten-'+EN_DIGITS[n-10]+'"';if(n>=20&&n<=99&&n%10===0)return n+' = '+numToZh(n)+' — "'+EN_DIGITS[n/10]+'-tens"';if(n>=21&&n<=99)return n+' = '+numToZh(n)+' — "'+EN_DIGITS[Math.floor(n/10)]+'-tens-'+EN_DIGITS[n%10]+'"';return '';}
-let ctZh=true,ctSub='next';
-function zhVoice(){if(!('speechSynthesis' in window))return null;return speechSynthesis.getVoices().find(v=>v.lang&&v.lang.toLowerCase().replace('_','-').startsWith('zh'))||null;}
-function ctSpeak(n){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(n));u.rate=0.85;u.pitch=1.1;u.lang='en-US';speechSynthesis.speak(u);if(ctZh){const v=zhVoice();if(v){const z=new SpeechSynthesisUtterance(numToZh(n));z.voice=v;z.lang=v.lang;z.rate=0.8;speechSynthesis.speak(z);}}}
-function toggleZh(){ctZh=!ctZh;gs.zhAudio=ctZh;gsSave();const b=document.getElementById('ct-zh-btn');b.classList.toggle('on',ctZh);b.textContent=ctZh?'🔊 中文 on':'🔇 中文 off';}
+let ctSub='next';
+function ctSpeak(n){if(!('speechSynthesis' in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(String(n));u.rate=0.85;u.pitch=1.1;u.lang='en-US';speechSynthesis.speak(u);}
 function switchCtSub(sub){ctSub=sub;document.querySelectorAll('.ct-sub-tab').forEach((b,i)=>b.classList.toggle('active',['next','chart','blast'][i]===sub));document.getElementById('ct-next').style.display=sub==='next'?'block':'none';document.getElementById('ct-chart').style.display=sub==='chart'?'block':'none';document.getElementById('ct-blast').style.display=sub==='blast'?'block':'none';}
 
 /* NEXT NUMBER */
 let ctnMax=100,ctnAns=0,ctnStreak=0,ctnAnswered=false;
 function ctnRev(n){const s=String(n);if(s.length!==2||s[0]===s[1]||s[1]==='0')return null;return parseInt(s[1]+s[0]);}
 function ctnNew(){
-  ctnAnswered=false;document.getElementById('ctn-feedback').textContent='';document.getElementById('ctn-caption').textContent='';
+  ctnAnswered=false;document.getElementById('ctn-feedback').textContent='';
   // Half the questions land on a decade bridge (…28, 29 → 30), the known trouble spot
   if(Math.random()<0.5){const ds=[];for(let d=10;d<=ctnMax;d+=10)ds.push(d);ctnAns=ds[Math.floor(Math.random()*ds.length)];}
   else ctnAns=mRand(4,ctnMax);
   const row=document.getElementById('ctn-seq');row.innerHTML='';
-  [ctnAns-3,ctnAns-2,ctnAns-1].forEach(v=>{const c=document.createElement('div');c.className='ctn-chip';c.textContent=v;c.onclick=()=>{ctSpeak(v);ctnShowCaption(v);};row.appendChild(c);});
+  [ctnAns-3,ctnAns-2,ctnAns-1].forEach(v=>{const c=document.createElement('div');c.className='ctn-chip';c.textContent=v;c.onclick=()=>ctSpeak(v);row.appendChild(c);});
   const blank=document.createElement('div');blank.className='ctn-chip blank';blank.textContent='?';blank.id='ctn-blank';row.appendChild(blank);
-  document.getElementById('ctn-hint').textContent='What comes after '+(ctnAns-1)+'? Tap the numbers to hear them!';
+  document.getElementById('ctn-hint').textContent='What comes next?';
   const opts=new Set([ctnAns]);
   const cands=wpShuffle([ctnAns+10,ctnAns-10,ctnAns+1,ctnRev(ctnAns)].filter(v=>v&&v>0&&v<=100&&v!==ctnAns));
   for(const v of cands)if(opts.size<4)opts.add(v);
@@ -1251,17 +1238,15 @@ function ctnNew(){
   const arow=document.getElementById('ctn-answers');arow.innerHTML='';
   [...opts].sort((a,b)=>a-b).forEach(v=>{const b=document.createElement('button');b.className='ans-btn';b.textContent=v;b.onclick=()=>ctnPick(b,v);arow.appendChild(b);});
 }
-function ctnShowCaption(n){document.getElementById('ctn-caption').textContent=ctZh?ctCaption(n):'';}
 function ctnPick(btn,val){
   if(ctnAnswered)return;
   if(val===ctnAns){
     ctnAnswered=true;btn.classList.add('correct');ctnStreak++;
     const blank=document.getElementById('ctn-blank');blank.textContent=ctnAns;blank.classList.remove('blank');blank.classList.add('solved');
     document.getElementById('ctn-feedback').textContent=CHEERS[Math.floor(Math.random()*CHEERS.length)];
-    ctnShowCaption(ctnAns);
-    if('speechSynthesis' in window){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance((ctnAns-2)+', '+(ctnAns-1)+', '+ctnAns+'!');u.rate=0.85;u.pitch=1.1;u.lang='en-US';speechSynthesis.speak(u);if(ctZh){const v=zhVoice();if(v){const z=new SpeechSynthesisUtterance(numToZh(ctnAns));z.voice=v;z.lang=v.lang;z.rate=0.8;speechSynthesis.speak(z);}}}
+    ctSpeak(ctnAns);
     earnXP(3+(ctnStreak>1?2:0));tickDaily('math',1);
-    setTimeout(ctnNew,2000);
+    setTimeout(ctnNew,1200);
   }else{
     btn.classList.add('wrong');ctnStreak=0;
     document.getElementById('ctn-feedback').textContent='Not quite — try again! 💪';
@@ -1670,7 +1655,6 @@ function gsLoad() {
   rCorrectCounts = gs.correctCounts || {};
   rBestStreak = gs.bestStreak || 0;
   wpBest = gs.wpBest || 0;
-  ctZh = gs.zhAudio !== false; // Mandarin audio on by default
   // Daily reset check
   const today = new Date().toDateString();
   if (gs.lastDate !== today) {
@@ -1692,7 +1676,6 @@ function gsSave() {
   gs.correctCounts = rCorrectCounts;
   gs.bestStreak = rBestStreak;
   gs.wpBest = wpBest;
-  gs.zhAudio = ctZh;
   try { localStorage.setItem('learnplay_gs', JSON.stringify(gs)); } catch(e) {}
 }
 
@@ -1822,9 +1805,7 @@ document.getElementById('ft-mnemonic').textContent=FLIP_ITEMS[ftChar].mnemonic;
 updateXPBar();updateDailyGoals();updateWordChips();
 document.getElementById('wp-best').textContent=wpBest;
 // Counting tab init
-const zb=document.getElementById('ct-zh-btn');zb.classList.toggle('on',ctZh);zb.textContent=ctZh?'🔊 中文 on':'🔇 中文 off';
 ctnNew();cthReset();ctbReset();
-if('speechSynthesis' in window)speechSynthesis.getVoices(); // warm the voice list so the zh voice is found on first tap
 if(gs.daily && gs.dailyBonusGiven) document.getElementById('daily-bonus-pill').style.display='flex';
 checkStreakMilestone();
 
